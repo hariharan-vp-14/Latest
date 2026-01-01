@@ -11,7 +11,11 @@ module.exports.registerUser = async(req,res,next) =>{
         return res.status(400).json({errors: errors.array()})
     }
 
-    const{ fullname, email, password, institution, address, designation, contact, totalNumberPhysical} = req.body;
+    const{ fullname, email, password, confirmPassword, institution, address, designation, contact, totalNumberPhysical} = req.body;
+
+    if (password !== confirmPassword) {
+        return res.status(400).json({ message: 'Passwords do not match' });
+    }
 
     const existingUser = await userModel.findOne({email});
     if(existingUser){

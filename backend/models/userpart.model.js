@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const userSchema = new mongoose.Schema({
+const userParticipantSchema = new mongoose.Schema({
   fullname: {
     firstname: {
       type: String,
@@ -29,39 +29,33 @@ const userSchema = new mongoose.Schema({
     required: false,
     select: false,
   },
+  eduInfo: {
+    type: String,
+  },
+  age: {
+    type: Number,
+  },
   institution: {
     type: String,
   },
-  address: {
+  disabilityType: {
     type: String,
-  },
-  designation: {
-    type: String,
-  },
-  contact: {
-    type: String,
-  },
-  totalNumberPhysical: {
-    type: Number,
-  },
-  socketId: {
-    type: String, // used to track live location
   },
 });
 
-userSchema.methods.generateAuthToken = function() {
+userParticipantSchema.methods.generateAuthToken = function() {
   const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
   return token;
 };
 
-userSchema.methods.comparePassword = async function(Password) {
+userParticipantSchema.methods.comparePassword = async function(Password) {
   return await bcrypt.compare(Password, this.password);
 };
 
-userSchema.statics.hashPassword = async function(password) {
+userParticipantSchema.statics.hashPassword = async function(password) {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 };
 
-const userModel = mongoose.model('user', userSchema);
-module.exports = userModel;
+const userParticipantModel = mongoose.model('userparticipant', userParticipantSchema);
+module.exports = userParticipantModel;

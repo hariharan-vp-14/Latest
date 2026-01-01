@@ -5,10 +5,11 @@ This is the backend API for the Talent application, built with Node.js, Express,
 ## Features
 
 - User registration and login
+- User participant registration and login
 - JWT-based authentication
 - Password hashing with bcrypt
 - Token blacklisting for logout
-- User profile retrieval
+- User and user participant profile retrieval
 
 ## Installation
 
@@ -91,9 +92,64 @@ const userSchema = new mongoose.Schema({
 - `comparePassword(password)`: Compares the provided password with the hashed password.
 - `hashPassword(password)` (static): Hashes the password using bcrypt.
 
+## UserParticipant Model
+
+The UserParticipant model is defined using Mongoose and includes the following fields for participants in the talent application:
+
+### Schema
+
+```javascript
+const userParticipantSchema = new mongoose.Schema({
+  fullname: {
+    firstname: {
+      type: String,
+      required: true,
+      minlength: [3, "First name must be at least 3 characters long"],
+    },
+    lastname: {
+      type: String,
+    },
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    minlength: [5, "Email must be at least 5 characters long"],
+  },
+  password: {
+    type: String,
+    required: true,
+    select: false,
+  },
+  confirmPassword: {
+    type: String,
+    required: false,
+    select: false,
+  },
+  eduInfo: {
+    type: String,
+  },
+  age: {
+    type: Number,
+  },
+  institution: {
+    type: String,
+  },
+  disabilityType: {
+    type: String,
+  },
+});
+```
+
+### Methods
+
+- `generateAuthToken()`: Generates a JWT token for the user participant, valid for 24 hours.
+- `comparePassword(password)`: Compares the provided password with the hashed password.
+- `hashPassword(password)` (static): Hashes the password using bcrypt.
+
 ## API Endpoints
 
-### POST /register
+### POST /user/register
 
 Registers a new user.
 
@@ -162,7 +218,7 @@ Registers a new user.
   }
   ```
 
-### POST /login
+### POST /user/login
 
 Logs in an existing user.
 
@@ -220,7 +276,7 @@ Logs in an existing user.
   }
   ```
 
-### GET /profile
+### GET /user/profile
 
 Retrieves the authenticated user's profile.
 
@@ -256,9 +312,202 @@ Retrieves the authenticated user's profile.
   }
   ```
 
-### GET /logout
+### GET /user/logout
 
 Logs out the authenticated user by clearing the token cookie and blacklisting the token.
+
+**Headers:**
+- Authorization: Bearer <token> (or token in cookies)
+
+**Responses:**
+
+- **200 OK:**
+  ```json
+  {
+    "message": "Logged out"
+  }
+  ```
+
+- **401 Unauthorized:**
+  ```json
+  {
+    "message": "unauthorized"
+  }
+  ```
+
+## User Participant API Endpoints
+
+### POST /userpart/register
+
+Registers a new user participant.
+
+**Request Body:**
+```json
+{
+  "fullname": {
+    "firstname": "Jane",
+    "lastname": "Doe"
+  },
+  "email": "jane.doe@example.com",
+  "password": "password123",
+  "confirmPassword": "password123",
+  "eduInfo": "Bachelor's in Computer Science",
+  "age": 25,
+  "institution": "Example University",
+  "disabilityType": "None"
+}
+```
+
+**Validation:**
+- Email must be valid
+- First name must be at least 3 characters
+- Password must be at least 6 characters
+- Confirm password must match password
+- Age must be a number (if provided)
+
+**Responses:**
+
+- **201 Created:**
+  ```json
+  {
+    "token": "jwt-token-here",
+    "user": {
+      "_id": "user-id",
+      "fullname": {
+        "firstname": "Jane",
+        "lastname": "Doe"
+      },
+      "email": "jane.doe@example.com",
+      "eduInfo": "Bachelor's in Computer Science",
+      "age": 25,
+      "institution": "Example University",
+      "disabilityType": "None"
+    }
+  }
+  ```
+
+- **400 Bad Request (Validation Errors):**
+  ```json
+  {
+    "errors": [
+      {
+        "msg": "Invalid Email",
+        "param": "email",
+        "location": "body"
+      }
+    ]
+  }
+  ```
+
+- **400 Bad Request (Passwords do not match):**
+  ```json
+  {
+    "message": "Passwords do not match"
+  }
+  ```
+
+- **400 Bad Request (User Exists):**
+  ```json
+  {
+    "message": "User already exists"
+  }
+  ```
+
+### POST /userpart/login
+
+Logs in an existing user participant.
+
+**Request Body:**
+```json
+{
+  "email": "jane.doe@example.com",
+  "password": "password123"
+}
+```
+
+**Validation:**
+- Email must be valid
+- Password must be at least 6 characters
+
+**Responses:**
+
+- **200 OK:**
+  ```json
+  {
+    "token": "jwt-token-here",
+    "user": {
+      "_id": "user-id",
+      "fullname": {
+        "firstname": "Jane",
+        "lastname": "Doe"
+      },
+      "email": "jane.doe@example.com",
+      "eduInfo": "Bachelor's in Computer Science",
+      "age": 25,
+      "institution": "Example University",
+      "disabilityType": "None"
+    }
+  }
+  ```
+
+- **400 Bad Request (Validation Errors):**
+  ```json
+  {
+    "errors": [
+      {
+        "msg": "Invalid Email",
+        "param": "email",
+        "location": "body"
+      }
+    ]
+  }
+  ```
+
+- **401 Unauthorized:**
+  ```json
+  {
+    "message": "Invalid email or password"
+  }
+  ```
+
+### GET /userpart/profile
+
+Retrieves the authenticated user participant's profile.
+
+**Headers:**
+- Authorization: Bearer <token> (or token in cookies)
+
+**Responses:**
+
+- **200 OK:**
+  ```json
+  {
+    "token": "jwt-token-here",
+    "user": {
+      "_id": "user-id",
+      "fullname": {
+        "firstname": "Jane",
+        "lastname": "Doe"
+      },
+      "email": "jane.doe@example.com",
+      "eduInfo": "Bachelor's in Computer Science",
+      "age": 25,
+      "institution": "Example University",
+      "disabilityType": "None"
+    }
+  }
+  ```
+
+- **401 Unauthorized:**
+  ```json
+  {
+    "message": "unauthorized"
+  }
+  ```
+
+### GET /userpart/logout
+
+Logs out the authenticated user participant by clearing the token cookie and blacklisting the token.
 
 **Headers:**
 - Authorization: Bearer <token> (or token in cookies)
