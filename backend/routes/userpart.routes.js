@@ -1,22 +1,22 @@
 const express = require("express");
-const userController = require("../controllers/user.controllers");
+const userPartController = require("../controllers/userpart.controller");
 const { body } = require("express-validator");
 const router = express.Router();
-const authMiddleware = require('../middleware/auth.middleware')
+const authMiddleware = require('../middleware/auth.middleware');
 
 router.post(
   "/register",
   [
-    body("email")
-      .isEmail()
-      .withMessage("Invalid Email"),
-
     body("fullname.firstname")
       .isLength({ min: 3 })
       .withMessage("First name must be at least 3 characters long"),
 
     body("fullname.lastname")
       .optional(),
+
+    body("email")
+      .isEmail()
+      .withMessage("Invalid Email"),
 
     body("password")
       .isLength({ min: 6 })
@@ -26,36 +26,31 @@ router.post(
       .isLength({ min: 6 })
       .withMessage("Confirm password must be at least 6 characters long"),
 
+    body("eduInfo").optional(),
+    body("age").optional().isNumeric().withMessage("Age must be a number"),
     body("institution").optional(),
-    body("address").optional(),
-    body("designation").optional(),
-    body("contact").optional(),
-    body("totalNumberPhysical").optional().isNumeric().withMessage("Total number physical must be a number"),
+    body("disabilityType").optional(),
   ],
-  userController.registerUser
+  userPartController.registerUserParticipant
 );
 
-router.post('/login',[
+router.post('/login', [
     body('email').isEmail().withMessage('Invalid Email'),
-    body('password').isLength({min:6}).withMessage('Password must be at least 6 characters long')
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
 ],
-    userController.loginUser
-)
-
+    userPartController.loginUserParticipant
+);
 
 router.get(
   '/profile',
-  authMiddleware.authUser,
-  userController.getUserProfile
+  authMiddleware.authUserPart,
+  userPartController.getUserParticipantProfile
 );
-
 
 router.get(
   '/logout',
-  authMiddleware.authUser,
-  userController.logoutUser
+  authMiddleware.authUserPart,
+  userPartController.logoutUserParticipant
 );
-
-
 
 module.exports = router;
