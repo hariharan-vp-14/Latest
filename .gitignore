@@ -1,0 +1,12 @@
+node_modules/
+npm-debug.log*
+.env
+.env.*
+dist/
+build/
+.DS_Store
+coverage/
+*.log
+/.idea/
+/.vscode/
+thunderclient_collection.json

@@ -1,67 +1,69 @@
 const mongoose = require("mongoose");
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-const userSchema = new mongoose.Schema({
-  fullname: {
-    firstname: {
+const userSchema = new mongoose.Schema(
+  {
+    fullname: {
+      firstname: {
+        type: String,
+        required: true,
+        minlength: 3,
+      },
+      lastname: String,
+    },
+
+    email: {
       type: String,
       required: true,
-      minlength: [3, "First name must be at least 3 characters long"],
+      unique: true,
+      lowercase: true,
+      trim: true,
     },
-    lastname: {
+
+    password: {
       type: String,
+      required: true,
+      select: false,
     },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    verificationToken: String,
+    verificationTokenExpiry: Date,
+
+    institution: String,
+    address: String,
+    designation: String,
+    contact: String,
+    totalNumberPhysical: Number,
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    minlength: [5, "Email must be at least 5 characters long"],
-  },
-  password: {
-    type: String,
-    required: true,
-    select: false,
-  },
-  confirmPassword: {
-    type: String,
-    required: false,
-    select: false,
-  },
-  institution: {
-    type: String,
-  },
-  address: {
-    type: String,
-  },
-  designation: {
-    type: String,
-  },
-  contact: {
-    type: String,
-  },
-  totalNumberPhysical: {
-    type: Number,
-  },
-  socketId: {
-    type: String, // used to track live location
-  },
+  { timestamps: true }
+);
+
+/* 🔐 PASSWORD HASHING — CORRECT WAY */
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
+
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
-userSchema.methods.generateAuthToken = function() {
-  const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
-  return token;
+/* 🔑 JWT */
+userSchema.methods.generateAuthToken = function () {
+  return jwt.sign(
+    { _id: this._id },
+    process.env.JWT_SECRET,
+    { expiresIn: "24h" }
+  );
 };
 
-userSchema.methods.comparePassword = async function(Password) {
-  return await bcrypt.compare(Password, this.password);
+/* 🔍 PASSWORD COMPARE */
+userSchema.methods.comparePassword = async function (password) {
+  return bcrypt.compare(password, this.password);
 };
 
-userSchema.statics.hashPassword = async function(password) {
-  const salt = await bcrypt.genSalt(10);
-  return await bcrypt.hash(password, salt);
-};
-
-const userModel = mongoose.model('user', userSchema);
-module.exports = userModel;
+module.exports = mongoose.model("user", userSchema);
