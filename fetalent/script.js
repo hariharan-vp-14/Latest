@@ -1,11 +1,11 @@
 // TalentConnect Pro - Enhanced Main JavaScript Application
 const TalentConnectPro = {
     // Initialize application
-    init: function() {
+    init: async function() {
         console.log('TalentConnectPro Initializing...');
         this.initializeComponents();
         this.setupEventListeners();
-        this.loadInitialData();
+        await this.loadInitialData();
         this.updateUI();
         this.startAnimations();
         console.log('TalentConnectPro Initialized Successfully!');
@@ -381,7 +381,7 @@ const TalentConnectPro = {
     },
 
     // Load Initial Data
-    loadInitialData: function() {
+    loadInitialData: async function() {
         console.log('Loading initial data...');
         
         // Load theme preference
@@ -396,29 +396,33 @@ const TalentConnectPro = {
             document.documentElement.className = 'light-theme';
         }
 
-        // Load user data
-        const savedUser = localStorage.getItem('talentconnect-user');
-        if (savedUser) {
+        // Check for saved auth token and restore session
+        const savedToken = localStorage.getItem('token');
+        if (savedToken) {
             try {
-                this.state.currentUser = JSON.parse(savedUser);
-            } catch (e) {
-                console.error('Error parsing saved user:', e);
+                api.setAuth(savedToken);
+                const userResponse = await api.getUserProfile();
+                if (userResponse && userResponse.user) {
+                    this.state.currentUser = userResponse.user;
+                }
+            } catch (error) {
+                console.error('Error restoring session:', error);
+                localStorage.removeItem('token');
                 localStorage.removeItem('talentconnect-user');
             }
         }
 
-        // Load conferences
-        const savedConferences = localStorage.getItem('talentconnect-conferences');
-        if (savedConferences) {
-            try {
-                const allConferences = JSON.parse(savedConferences);
-                this.state.conferences = allConferences.filter(c => c.approved);
-                this.state.pendingConferences = allConferences.filter(c => !c.approved);
-            } catch (e) {
-                console.error('Error parsing saved conferences:', e);
+        // Load conferences from backend
+        try {
+            const response = await api.getAllEvents();
+            if (response && response.events) {
+                this.state.conferences = response.events.filter(e => e.status === 'approved' || e.status === 'upcoming');
+                this.state.pendingConferences = response.events.filter(e => e.status === 'pending');
+            } else {
                 this.loadDefaultConferences();
             }
-        } else {
+        } catch (error) {
+            console.error('Error loading events from backend:', error);
             this.loadDefaultConferences();
         }
 
@@ -615,10 +619,9 @@ const TalentConnectPro = {
         }
     },
 
-    handleSignIn: function() {
+    handleSignIn: async function() {
         const email = document.getElementById('signInEmail')?.value;
         const password = document.getElementById('signInPassword')?.value;
-        const selectedRole = document.querySelector('#signInModal .role-btn.active')?.dataset.role;
         const rememberMe = document.getElementById('rememberMe')?.checked;
 
         // Simple validation
@@ -627,71 +630,50 @@ const TalentConnectPro = {
             return;
         }
 
-        // Check credentials
-        let user = null;
-        
-        // First check admin credentials
-        if (selectedRole === 'admin') {
-            if (email === "w2227021@gmail.com" && password === "11111111") {
-                user = {
-                    id: 2,
-                    email: email,
-                    firstName: "Admin",
-                    lastName: "User",
-                    role: "admin",
-                    institution: "TalentConnect Pro"
-                };
-            } else {
-                this.showNotification('Access Denied', 'Invalid admin credentials', 'error');
-                return;
-            }
-        } else {
-            // Check regular users
-            const savedUsers = JSON.parse(localStorage.getItem('talentconnect-users') || '[]');
-            user = savedUsers.find(u => u.email === email && u.password === password);
+        try {
+            // Show loading state
+            this.showLoadingState(true);
             
-            if (!user) {
-                // Check default users
-                user = this.defaultData.users.find(u => u.email === email && u.password === password);
-            }
+            // Call backend API
+            const response = await api.loginUser(email, password);
             
-            if (user && user.role !== selectedRole) {
-                this.showNotification('Role Mismatch', `Please sign in as ${user.role}`, 'error');
-                return;
+            if (response && response.token) {
+                // Store user data
+                this.state.currentUser = response.user;
+                api.setAuth(response.token);
+                
+                if (rememberMe) {
+                    localStorage.setItem('talentconnect-user', JSON.stringify(this.state.currentUser));
+                }
+                
+                let message = '';
+                if (response.user.role === 'admin') {
+                    message = 'Welcome to Admin Panel!';
+                } else if (response.user.role === 'host') {
+                    message = 'Welcome back, Host!';
+                } else {
+                    message = 'Welcome back to TalentConnect Pro!';
+                }
+                
+                this.showNotification('Success!', message, 'success');
+                this.closeAllModals();
+                this.updateAuthButtons();
+                
+                if (response.user.role === 'admin') {
+                    this.openAdminPanel();
+                } else {
+                    this.updateProfileModal();
+                    this.openModal('profile');
+                }
             }
-        }
-
-        if (user) {
-            this.state.currentUser = { ...user };
-            if (rememberMe) {
-                localStorage.setItem('talentconnect-user', JSON.stringify(this.state.currentUser));
-            }
-            
-            let message = '';
-            if (user.role === 'admin') {
-                message = 'Welcome to Admin Panel!';
-            } else if (user.role === 'host') {
-                message = 'Welcome back, Host!';
-            } else {
-                message = 'Welcome back to TalentConnect Pro!';
-            }
-            
-            this.showNotification('Success!', message, 'success');
-            this.closeAllModals();
-            this.updateAuthButtons();
-            
-            if (user.role === 'admin') {
-                this.openAdminPanel();
-            } else {
-                this.updateProfileModal();
-                this.openModal('profile');
-            }
-        } else {
-            this.showNotification('Error', 'Invalid email or password', 'error');
+        } catch (error) {
+            this.showNotification('Error', error.message || 'Invalid email or password', 'error');
+        } finally {
+            this.showLoadingState(false);
         }
     },
 
-    handleParticipantSignUp: function() {
+    handleParticipantSignUp: async function() {
         const formData = {
             firstName: document.getElementById('participantFirstName').value,
             lastName: document.getElementById('participantLastName').value,
@@ -700,9 +682,6 @@ const TalentConnectPro = {
             institution: document.getElementById('participantInstitution').value,
             email: document.getElementById('participantEmail').value,
             disabilityType: document.getElementById('participantDisabilityType').value,
-            otherDisability: document.getElementById('participantOtherDisabilityField').style.display === 'block' 
-                ? document.getElementById('participantOtherDisability').value 
-                : '',
             password: document.getElementById('participantPassword').value,
             confirmPassword: document.getElementById('participantConfirmPassword').value
         };
@@ -710,37 +689,32 @@ const TalentConnectPro = {
         // Validation
         if (!this.validateParticipantForm(formData)) return;
 
-        // Check if user already exists
-        const savedUsers = JSON.parse(localStorage.getItem('talentconnect-users') || '[]');
-        if (savedUsers.some(u => u.email === formData.email)) {
-            this.showNotification('Error', 'User with this email already exists', 'error');
-            return;
+        try {
+            this.showLoadingState(true);
+            
+            // Call backend API
+            const response = await api.registerUser(formData);
+            
+            if (response && response.user) {
+                this.state.currentUser = response.user;
+                if (response.token) {
+                    api.setAuth(response.token);
+                }
+                
+                this.showNotification('Success!', 'Participant account created successfully! Please check your email to verify your account.', 'success');
+                this.closeAllModals();
+                this.updateAuthButtons();
+                this.updateProfileModal();
+                this.openModal('profile');
+            }
+        } catch (error) {
+            this.showNotification('Error', error.message || 'Failed to create account', 'error');
+        } finally {
+            this.showLoadingState(false);
         }
-
-        // Create new user
-        const newUser = {
-            id: Date.now(),
-            ...formData,
-            role: 'participant',
-            eventsAttended: 0,
-            connections: 0,
-            createdAt: new Date().toISOString()
-        };
-
-        // Save to localStorage
-        savedUsers.push(newUser);
-        localStorage.setItem('talentconnect-users', JSON.stringify(savedUsers));
-        localStorage.setItem('talentconnect-user', JSON.stringify(newUser));
-        
-        this.state.currentUser = newUser;
-        this.showNotification('Success!', 'Participant account created successfully!', 'success');
-        this.closeAllModals();
-        this.updateAuthButtons();
-        this.updateProfileModal();
-        this.openModal('profile');
     },
 
-    handleHostSignUp: function() {
+    handleHostSignUp: async function() {
         const formData = {
             firstName: document.getElementById('hostFirstName').value,
             lastName: document.getElementById('hostLastName').value,
@@ -749,7 +723,6 @@ const TalentConnectPro = {
             designation: document.getElementById('hostDesignation').value,
             contact: document.getElementById('hostContact').value,
             address: document.getElementById('hostAddress').value,
-            studentCount: document.getElementById('hostStudentCount').value,
             password: document.getElementById('hostPassword').value,
             confirmPassword: document.getElementById('hostConfirmPassword').value
         };
@@ -757,33 +730,29 @@ const TalentConnectPro = {
         // Validation
         if (!this.validateHostForm(formData)) return;
 
-        // Check if user already exists
-        const savedUsers = JSON.parse(localStorage.getItem('talentconnect-users') || '[]');
-        if (savedUsers.some(u => u.email === formData.email)) {
-            this.showNotification('Error', 'User with this email already exists', 'error');
-            return;
+        try {
+            this.showLoadingState(true);
+            
+            // Call backend API for host registration
+            const response = await api.registerHost(formData);
+            
+            if (response && response.host) {
+                this.state.currentUser = response.host;
+                if (response.token) {
+                    api.setAuth(response.token);
+                }
+                
+                this.showNotification('Success!', 'Host account created successfully! Please check your email to verify your account.', 'success');
+                this.closeAllModals();
+                this.updateAuthButtons();
+                this.updateProfileModal();
+                this.openModal('profile');
+            }
+        } catch (error) {
+            this.showNotification('Error', error.message || 'Failed to create host account', 'error');
+        } finally {
+            this.showLoadingState(false);
         }
-
-        // Create new user
-        const newUser = {
-            id: Date.now(),
-            ...formData,
-            role: 'host',
-            eventsHosted: 0,
-            createdAt: new Date().toISOString()
-        };
-
-        // Save to localStorage
-        savedUsers.push(newUser);
-        localStorage.setItem('talentconnect-users', JSON.stringify(savedUsers));
-        localStorage.setItem('talentconnect-user', JSON.stringify(newUser));
-        
-        this.state.currentUser = newUser;
-        this.showNotification('Success!', 'Host account created successfully!', 'success');
-        this.closeAllModals();
-        this.updateAuthButtons();
-        this.updateProfileModal();
-        this.openModal('profile');
     },
 
     validateParticipantForm: function(formData) {
@@ -854,12 +823,25 @@ const TalentConnectPro = {
         }
     },
 
-    handleLogout: function() {
-        this.state.currentUser = null;
-        localStorage.removeItem('talentconnect-user');
-        this.closeAllModals();
-        this.updateAuthButtons();
-        this.showNotification('Logged Out', 'You have been successfully logged out', 'info');
+    handleLogout: async function() {
+        try {
+            // Call backend logout endpoint
+            await api.userLogout();
+            
+            this.state.currentUser = null;
+            localStorage.removeItem('talentconnect-user');
+            this.closeAllModals();
+            this.updateAuthButtons();
+            this.showNotification('Logged Out', 'You have been successfully logged out', 'info');
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Still logout locally even if backend call fails
+            this.state.currentUser = null;
+            localStorage.removeItem('talentconnect-user');
+            this.closeAllModals();
+            this.updateAuthButtons();
+            this.showNotification('Logged Out', 'You have been logged out', 'info');
+        }
     },
 
     updateProfileModal: function() {
@@ -989,7 +971,7 @@ const TalentConnectPro = {
         this.openModal('confirmation');
     },
 
-    handleCreateEvent: function() {
+    handleCreateEvent: async function() {
         if (!this.state.currentUser || this.state.currentUser.role !== 'host') {
             this.showNotification('Permission Denied', 'Only hosts can create events', 'error');
             return;
@@ -1001,40 +983,33 @@ const TalentConnectPro = {
         }
 
         const formData = this.pendingEventData;
-        const user = this.state.currentUser;
 
-        // Create new conference (pending approval)
-        const newConference = {
-            id: Date.now(),
-            ...formData,
-            host: `${user.firstName} ${user.lastName}`,
-            hostId: user.id,
-            hostInstitution: user.institution,
-            hostContact: user.contact,
-            registeredParticipants: 0,
-            status: 'pending',
-            approved: false,
-            submittedAt: new Date().toISOString()
-        };
-
-        // Add to pending conferences
-        this.state.pendingConferences.push(newConference);
-        this.saveAllConferences();
-
-        // Show success message
-        this.showNotification('Success!', 'Conference submitted for admin approval. You will be notified once approved.', 'success');
-        
-        // Send email notification (simulated)
-        this.sendEventSubmissionEmail(newConference);
-        
-        // Close modals and reset form
-        this.closeAllModals();
-        this.pendingEventData = null;
-        document.getElementById('createEventForm').reset();
-        
-        // Update admin panel if admin is logged in
-        if (this.state.currentUser?.role === 'admin') {
-            this.updateAdminPanel();
+        try {
+            this.showLoadingState(true);
+            
+            // Call backend API to create event
+            const response = await api.createEvent(formData);
+            
+            if (response && response.event) {
+                this.showNotification('Success!', 'Conference created successfully! Awaiting admin approval.', 'success');
+                
+                // Close modals and reset form
+                this.closeAllModals();
+                this.pendingEventData = null;
+                document.getElementById('createEventForm').reset();
+                
+                // Reload events
+                const eventsResponse = await api.getAllEvents();
+                if (eventsResponse && eventsResponse.events) {
+                    this.state.conferences = eventsResponse.events.filter(e => e.status === 'approved' || e.status === 'upcoming');
+                    this.state.pendingConferences = eventsResponse.events.filter(e => e.status === 'pending');
+                    this.renderConferences();
+                }
+            }
+        } catch (error) {
+            this.showNotification('Error', error.message || 'Failed to create event', 'error');
+        } finally {
+            this.showLoadingState(false);
         }
     },
 
@@ -1293,7 +1268,7 @@ const TalentConnectPro = {
         });
     },
 
-    handleConferenceRegistration: function(conferenceId) {
+    handleConferenceRegistration: async function(conferenceId) {
         if (!this.state.currentUser) {
             this.showNotification('Authentication Required', 'Please sign in to register for conferences', 'info');
             this.openModal('signIn');
@@ -1308,37 +1283,21 @@ const TalentConnectPro = {
         const conference = this.state.conferences.find(c => c.id === conferenceId);
         if (!conference) return;
 
-        // Check if user is already registered
-        const registrations = JSON.parse(localStorage.getItem('talentconnect-registrations') || '[]');
-        const userRegistration = registrations.find(r => 
-            r.userId === this.state.currentUser.id && r.conferenceId === conferenceId
-        );
-
-        if (userRegistration) {
-            this.showNotification('Already Registered', 'You have already registered for this conference', 'info');
-            return;
+        try {
+            this.showLoadingState(true);
+            
+            // Call backend API to register for event
+            const response = await api.registerForEvent(conferenceId);
+            
+            if (response && response.success) {
+                this.showNotification('Success!', `You've registered for "${conference.title}"`, 'success');
+                this.renderConferences();
+            }
+        } catch (error) {
+            this.showNotification('Error', error.message || 'Failed to register for conference', 'error');
+        } finally {
+            this.showLoadingState(false);
         }
-
-        if (conference.registeredParticipants >= conference.maxParticipants) {
-            this.showNotification('Conference Full', 'This conference has reached maximum capacity', 'warning');
-            return;
-        }
-
-        // Register user
-        conference.registeredParticipants++;
-        registrations.push({
-            id: Date.now(),
-            userId: this.state.currentUser.id,
-            conferenceId: conferenceId,
-            registeredAt: new Date().toISOString(),
-            status: 'registered'
-        });
-        
-        localStorage.setItem('talentconnect-registrations', JSON.stringify(registrations));
-        this.saveAllConferences();
-        
-        this.showNotification('Success!', `You've registered for "${conference.title}"`, 'success');
-        this.renderConferences();
     },
 
     handleJoinConference: function(conferenceId) {
@@ -1872,6 +1831,12 @@ const TalentConnectPro = {
     },
 
     // Notification System
+    showLoadingState: function(show = true) {
+        if (this.elements.loadingScreen) {
+            this.elements.loadingScreen.style.display = show ? 'flex' : 'none';
+        }
+    },
+
     showNotification: function(title, message, type = 'info') {
         if (!this.elements.toastContainer) return;
         
