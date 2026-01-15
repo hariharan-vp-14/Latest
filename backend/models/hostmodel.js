@@ -4,6 +4,9 @@ const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema(
   {
+    /* =========================
+       BASIC DETAILS
+    ========================== */
     fullname: {
       firstname: {
         type: String,
@@ -27,6 +30,9 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
+    /* =========================
+       EMAIL VERIFICATION
+    ========================== */
     isVerified: {
       type: Boolean,
       default: false,
@@ -35,6 +41,15 @@ const userSchema = new mongoose.Schema(
     verificationToken: String,
     verificationTokenExpiry: Date,
 
+    /* =========================
+       🔐 FORGOT PASSWORD
+    ========================== */
+    resetPasswordToken: String,
+    resetPasswordExpiry: Date,
+
+    /* =========================
+       EXTRA HOST INFO
+    ========================== */
     institution: String,
     address: String,
     designation: String,
@@ -44,7 +59,9 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-/* 🔐 PASSWORD HASHING — CORRECT WAY */
+/* =========================
+   🔐 PASSWORD HASHING
+========================= */
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
 
@@ -52,7 +69,9 @@ userSchema.pre("save", async function () {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-/* 🔑 JWT */
+/* =========================
+   🔑 JWT GENERATION
+========================= */
 userSchema.methods.generateAuthToken = function () {
   return jwt.sign(
     { _id: this._id },
@@ -61,9 +80,12 @@ userSchema.methods.generateAuthToken = function () {
   );
 };
 
-/* 🔍 PASSWORD COMPARE */
+/* =========================
+   🔍 PASSWORD COMPARE
+========================= */
 userSchema.methods.comparePassword = async function (password) {
   return bcrypt.compare(password, this.password);
 };
 
-module.exports = mongoose.model("user", userSchema);
+const hostModel = mongoose.model("host", userSchema);
+module.exports = hostModel;
