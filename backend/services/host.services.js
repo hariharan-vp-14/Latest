@@ -1,4 +1,4 @@
-const userModel = require('../models/user.model');
+const hostModel = require('../models/hostmodel');
 const nodemailer = require('nodemailer');
 
 /* ================= CREATE USER ================= */
@@ -7,26 +7,28 @@ module.exports.createUser = async (data) => {
     fullname,
     email,
     password,
-    age,
-    educationLevel,
     institution,
-    disabilityType,
+    address,
+    designation,
+    contact,
+    totalNumberPhysical,
     verificationToken,
     verificationTokenExpiry
   } = data;
 
-  if (!fullname?.firstname || !email || !password || !age || !educationLevel || !institution) {
+  if (!fullname?.firstname || !email || !password) {
     throw new Error('Required fields missing');
   }
 
-  const user = await userModel.create({
+  const user = await hostModel.create({
     fullname,
     email,
     password,
-    age,
-    educationLevel,
     institution,
-    disabilityType,
+    address,
+    designation,
+    contact,
+    totalNumberPhysical,
     verificationToken,
     verificationTokenExpiry
   });
@@ -39,7 +41,7 @@ module.exports.sendVerificationEmail = async (email, token) => {
   const BASE_URL =
     process.env.BASE_URL || `http://localhost:${process.env.PORT || 4000}`;
 
-  const verificationLink = `${BASE_URL}/user/verify/${token}`;
+  const verificationLink = `${BASE_URL}/host/verify/${token}`;
 
   let transporter;
 
@@ -74,7 +76,7 @@ module.exports.sendVerificationEmail = async (email, token) => {
     to: email,
     subject: 'Verify your email',
     html: `
-      <h2>Welcome To Talent </h2>
+      <h2>Welcome  To Talent </h2>
       <p>Please verify your account by clicking the link below:</p>
       <a href="${verificationLink}">Verify Email</a>
       <p>This link expires in 24 hours.</p>
