@@ -52,13 +52,19 @@ router.post(
 router.get("/", eventController.getApprovedEvents);
 
 /* =================================================
+   ADMIN → GET PENDING EVENTS
+================================================= */
+router.get(
+  "/pending",
+  authMiddleware,
+  roleMiddleware("administrator"),
+  eventController.getPendingEvents
+);
+
+/* =================================================
    PUBLIC → GET EVENT BY ID
 ================================================= */
 router.get("/:eventId", eventController.getEventById);
-
-/* =================================================
-   HOST → UPDATE EVENT (ONLY PENDING)
-================================================= */
 router.put(
   "/:eventId",
   authMiddleware,
@@ -86,17 +92,6 @@ router.delete(
   roleMiddleware("host"),
   eventController.deleteEvent
 );
-
-/* =================================================
-   ADMIN → GET PENDING EVENTS
-================================================= */
-router.get(
-  "/pending",
-  authMiddleware,
-  roleMiddleware("administrator"),
-  eventController.getPendingEvents
-);
-
 /* =================================================
    ADMIN → APPROVE / REJECT EVENT
 ================================================= */
