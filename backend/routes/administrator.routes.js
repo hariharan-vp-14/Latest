@@ -56,8 +56,14 @@ router.post(
 );
 
 /* =================================================
+   REFRESH TOKEN (ADMIN)
+================================================= */
+router.post("/refresh-token", administratorController.refreshAccessToken);
+
+/* =================================================
    🔐 FORGOT PASSWORD (ADMIN)
 ================================================= */
+const { validationResult } = require("express-validator");
 router.post(
   "/forgot-password",
   [
@@ -65,6 +71,13 @@ router.post(
       .isEmail()
       .withMessage("Please enter a valid email address"),
   ],
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    next();
+  },
   administratorController.forgotPassword
 );
 
@@ -82,13 +95,15 @@ router.post(
       .isLength({ min: 6 })
       .withMessage("Confirm password must be at least 6 characters long"),
   ],
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    next();
+  },
   administratorController.resetPassword
 );
-
-/* =================================================
-   VERIFY EMAIL
-================================================= */
-router.get("/verify/:token", administratorController.verifyEmail);
 
 /* =================================================
    ADMIN PROFILE
@@ -98,6 +113,16 @@ router.get(
   authMiddleware,
   roleMiddleware("administrator"),
   administratorController.getAdministratorProfile
+);
+
+/* =================================================
+   UPDATE ADMIN PROFILE
+================================================= */
+router.put(
+  "/profile",
+  authMiddleware,
+  roleMiddleware("administrator"),
+  administratorController.updateAdministratorProfile
 );
 
 /* =================================================

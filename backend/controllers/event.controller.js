@@ -97,6 +97,19 @@ module.exports.deleteEvent = async (req, res) => {
 };
 
 /* =================================================
+   HOST → GET HOST'S EVENTS
+================================================= */
+module.exports.getHostEvents = async (req, res) => {
+  try {
+    const hostId = req.user.id;
+    const events = await eventService.getHostEvents(hostId);
+    res.status(200).json({ events });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* =================================================
    ADMIN → GET PENDING EVENTS
 ================================================= */
 module.exports.getPendingEvents = async (req, res) => {
@@ -113,18 +126,34 @@ module.exports.getPendingEvents = async (req, res) => {
 ================================================= */
 module.exports.updateEventApprovalStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, rejectionReason } = req.body;
 
     const event = await eventService.updateEventApprovalStatus(
       req.params.eventId,
       status,
-      req.user.id
+      req.user.id,
+      rejectionReason || null
     );
 
     res.status(200).json({
       message: `Event ${status} successfully`,
       event
     });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+/* =================================================
+   PUBLIC → REGISTER FOR EVENT
+================================================= */
+module.exports.registerForEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const userId = req.user.id;
+
+    const result = await eventService.registerForEvent(eventId, userId);
+    res.status(200).json(result);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

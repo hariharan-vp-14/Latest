@@ -99,6 +99,12 @@ const eventSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    rejectionReason: {
+      type: String,
+      trim: true,
+      default: null,
+    },
   },
   { timestamps: true }
 );

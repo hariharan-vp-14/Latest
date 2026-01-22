@@ -1,9 +1,12 @@
 const Event = require("../models/event.model");
+const Registration = require("../models/registration.model");
+const Host = require("../models/hostmodel"); // Ensure Host model is loaded
+const { sendAdminNewEventNotification, sendEventDecisionNotification } = require("./email.services");
 
 /* =================================================
    CREATE EVENT (HOST)
 ================================================= */
-module.exports.createEvent = async (data) => {
+module.exports.createEvent = async (data, hostData = null) => {
   const {
     eventName,
     description,
@@ -39,6 +42,30 @@ module.exports.createEvent = async (data) => {
     createdBy
   });
 
+  // Populate host info for email notification
+  const populatedEvent = await event.populate("createdBy", "fullname email");
+
+  // Send notification to all admins asynchronously (don't wait for it)
+  if (process.env.ADMIN_EMAIL) {
+    const hostName = populatedEvent.createdBy?.fullname 
+      ? `${populatedEvent.createdBy.fullname.firstname} ${populatedEvent.createdBy.fullname.lastname}`
+      : 'Unknown Host';
+    
+    // Send email in the background without waiting
+    sendAdminNewEventNotification(
+      process.env.ADMIN_EMAIL,
+      eventName,
+      hostName,
+      {
+        category,
+        eventDate,
+        eventTime,
+        capacity,
+        description,
+      }
+    ).catch(err => console.error("Failed to notify admin:", err));
+  }
+
   return event;
 };
 
@@ -56,6 +83,15 @@ module.exports.getApprovedEvents = async () => {
 ================================================= */
 module.exports.getPendingEvents = async () => {
   return Event.find({ approvalStatus: "pending" })
+    .populate("createdBy", "fullname email")
+    .sort({ createdAt: -1 });
+};
+
+/* =================================================
+   GET HOST'S EVENTS
+================================================= */
+module.exports.getHostEvents = async (hostId) => {
+  return Event.find({ createdBy: hostId })
     .populate("createdBy", "fullname email")
     .sort({ createdAt: -1 });
 };
@@ -119,13 +155,14 @@ module.exports.deleteEvent = async (eventId, hostId) => {
 module.exports.updateEventApprovalStatus = async (
   eventId,
   status,
-  adminId
+  adminId,
+  rejectionReason = null
 ) => {
   if (!["approved", "rejected"].includes(status)) {
     throw new Error("Invalid approval status");
   }
 
-  const event = await Event.findById(eventId);
+  const event = await Event.findById(eventId).populate("createdBy", "email fullname");
 
   if (!event) {
     throw new Error("Event not found");
@@ -134,7 +171,81 @@ module.exports.updateEventApprovalStatus = async (
   event.approvalStatus = status;
   event.approvedBy = adminId;
   event.approvedAt = new Date();
+  
+  // Save rejection reason if rejecting
+  if (status === "rejected" && rejectionReason) {
+    event.rejectionReason = rejectionReason;
+  }
 
   await event.save();
+
+  // Send email to host about event decision with full event details
+  if (event.createdBy && event.createdBy.email) {
+    const hostName = event.createdBy.fullname 
+      ? `${event.createdBy.fullname.firstname} ${event.createdBy.fullname.lastname}`
+      : 'Host';
+
+    const eventDetails = {
+      eventName: event.eventName,
+      description: event.description,
+      eventDate: event.eventDate,
+      eventTime: event.eventTime,
+      capacity: event.capacity,
+      category: event.category,
+      meetingLink: event.meetingLink
+    };
+
+    await sendEventDecisionNotification(
+      event.createdBy.email,
+      hostName,
+      event.eventName,
+      status,
+      rejectionReason,
+      eventDetails
+    ).catch(err => console.error("Failed to notify host:", err));
+  }
+
   return event;
+};
+
+/* =================================================
+   REGISTER FOR EVENT (PUBLIC)
+================================================= */
+module.exports.registerForEvent = async (eventId, userId) => {
+  // Check if event exists and is approved
+  const event = await Event.findById(eventId);
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  if (event.approvalStatus !== "approved") {
+    throw new Error("Event is not available for registration");
+  }
+
+  // Check if event is full
+  if (event.registeredCount >= event.capacity) {
+    throw new Error("Event is full");
+  }
+
+  // Check if user is already registered
+  const existingRegistration = await Registration.findOne({
+    userId,
+    eventId
+  });
+
+  if (existingRegistration) {
+    throw new Error("Already registered for this event");
+  }
+
+  // Create registration
+  await Registration.create({
+    userId,
+    eventId
+  });
+
+  // Update registered count
+  event.registeredCount += 1;
+  await event.save();
+
+  return { message: "Successfully registered for event" };
 };

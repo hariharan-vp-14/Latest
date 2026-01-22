@@ -1,187 +1,353 @@
 const hostModel = require("../models/hostmodel");
 const hostService = require("../services/host.services");
-const { sendPasswordResetMail } = require("../services/email.services");
+const { sendPasswordResetMail, sendWelcomeEmail } = require("../services/email.services");
+const RefreshToken = require("../models/refreshToken.model");
+const { generateAccessToken, generateRefreshToken } = require("../utils/token");
 const { validationResult } = require("express-validator");
-const blackListTokenModel = require("../models/blacklistToken.model");
 const crypto = require("crypto");
 
 /* ================= REGISTER HOST ================= */
 module.exports.registerHost = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
 
-  const {
-    fullname,
-    email,
-    password,
-    confirmPassword,
-    institution,
-    address,
-    designation,
-    contact,
-    totalNumberPhysical
-  } = req.body;
+    const {
+      fullname,
+      email,
+      password,
+      confirmPassword,
+      institution,
+      address,
+      designation,
+      contact,
+      totalNumberPhysical
+    } = req.body;
 
-  if (password !== confirmPassword) {
-    return res.status(400).json({ message: "Passwords do not match" });
-  }
+    if (password !== confirmPassword) {
+      return res.status(400).json({ success: false, message: "Passwords do not match" });
+    }
 
-  const existingUser = await hostModel.findOne({ email });
-  if (existingUser) {
-    return res.status(400).json({ message: "User already exists" });
-  }
+    const existingHost = await hostModel.findOne({ email });
+    if (existingHost) {
+      return res.status(400).json({ success: false, message: "Host already exists" });
+    }
 
-  const verificationToken = crypto.randomBytes(32).toString("hex");
-
-  const user = await hostService.createUser({
-    fullname,
-    email,
-    password,
-    institution,
-    address,
-    designation,
-    contact,
-    totalNumberPhysical,
-    verificationToken,
-    verificationTokenExpiry: Date.now() + 24 * 60 * 60 * 1000
-  });
-
-  await hostService.sendVerificationEmail(user.email, verificationToken);
-
-  res.status(201).json({
-    message: "Host registered. Please verify your email before login."
-  });
-};
-
-/* ================= VERIFY EMAIL ================= */
-module.exports.verifyEmail = async (req, res) => {
-  const { token } = req.params;
-
-  const user = await hostModel.findOne({
-    verificationToken: token,
-    verificationTokenExpiry: { $gt: Date.now() }
-  });
-
-  if (!user) {
-    return res.status(400).json({
-      message: "Invalid or expired verification link"
+    const host = await hostService.createUser({
+      fullname,
+      email,
+      password,
+      institution,
+      address,
+      designation,
+      contact,
+      totalNumberPhysical,
+      isVerified: true
     });
+
+    // ✅ FIX: lowercase role
+    const accessToken = generateAccessToken({
+      _id: host._id,
+      role: "host"
+    });
+
+    const refreshToken = generateRefreshToken({
+      _id: host._id,
+      role: "host"
+    });
+
+    await RefreshToken.create({
+      userId: host._id,
+      userModel: "Host",
+      token: refreshToken,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    });
+
+    await sendWelcomeEmail(host.email, "Host");
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    const hostResponse = host.toObject();
+    delete hostResponse.password;
+    hostResponse.role = "host";
+
+    return res.status(201).json({
+      success: true,
+      accessToken,
+      user: hostResponse
+    });
+
+  } catch (err) {
+    console.error("Host registration error:", err);
+    res.status(500).json({ success: false, message: "Host registration failed" });
   }
-
-  user.isVerified = true;
-  user.verificationToken = undefined;
-  user.verificationTokenExpiry = undefined;
-
-  await user.save();
-
-  res.json({
-    message: "Email verified successfully. You can now login."
-  });
 };
 
 /* ================= LOGIN HOST ================= */
 module.exports.loginHost = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
 
-  const { email, password } = req.body;
+    const { email, password } = req.body;
 
-  const user = await hostModel.findOne({ email }).select("+password");
-  if (!user) {
-    return res.status(401).json({ message: "Invalid email or password" });
-  }
+    const host = await hostModel.findOne({ email }).select("+password");
+    if (!host) {
+      return res.status(401).json({ success: false, message: "Invalid email or password" });
+    }
 
-  if (!user.isVerified) {
-    return res.status(401).json({
-      message: "Please verify your email before logging in"
+    const isMatch = await host.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: "Invalid email or password" });
+    }
+
+    // ✅ FIX: issue BOTH tokens
+    const accessToken = generateAccessToken({
+      _id: host._id,
+      role: "host"
     });
+
+    const refreshToken = generateRefreshToken({
+      _id: host._id,
+      role: "host"
+    });
+
+    await RefreshToken.create({
+      userId: host._id,
+      userModel: "Host",
+      token: refreshToken,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    const hostResponse = host.toObject();
+    delete hostResponse.password;
+    hostResponse.role = "host";
+
+    console.log("✅ Host login successful - access & refresh token issued");
+
+    return res.status(200).json({
+      success: true,
+      accessToken,
+      user: hostResponse
+    });
+
+  } catch (err) {
+    console.error("Host login error:", err);
+    res.status(500).json({ success: false, message: "Host login failed" });
   }
-
-  const isMatch = await user.comparePassword(password);
-  if (!isMatch) {
-    return res.status(401).json({ message: "Invalid email or password" });
-  }
-
-  const token = user.generateAuthToken();
-  res.cookie("token", token, { httpOnly: true });
-
-  res.json({ token, user });
 };
 
-/* ================= 🔐 FORGOT PASSWORD ================= */
+/* ================= FORGOT PASSWORD ================= */
 module.exports.forgotPassword = async (req, res) => {
-  const { email } = req.body;
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
 
-  const user = await hostModel.findOne({ email });
-  if (!user) {
-    return res.status(404).json({ message: "Host not found" });
+    const { email } = req.body;
+
+    const host = await hostModel.findOne({ email });
+    if (!host) {
+      return res.status(404).json({ success: false, message: "Host not found" });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+    host.resetPasswordToken = hashedToken;
+    host.resetPasswordExpiry = Date.now() + 3600000; // 1 hour
+    await host.save();
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    await sendPasswordResetMail(email, resetLink);
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset email sent successfully"
+    });
+
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    res.status(500).json({ success: false, message: "Failed to send reset email" });
   }
-
-  const resetToken = crypto.randomBytes(32).toString("hex");
-
-  user.resetPasswordToken = resetToken;
-  user.resetPasswordExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes
-
-  await user.save();
-
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password/host/${resetToken}`;
-
-  await sendPasswordResetMail(user.email, resetLink, "Host");
-
-  res.status(200).json({
-    message: "Password reset link sent to your email"
-  });
 };
 
-/* ================= 🔐 RESET PASSWORD ================= */
+/* ================= RESET PASSWORD ================= */
 module.exports.resetPassword = async (req, res) => {
-  const { token } = req.params;
-  const { password, confirmPassword } = req.body;
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
 
-  if (password !== confirmPassword) {
-    return res.status(400).json({ message: "Passwords do not match" });
-  }
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
 
-  const user = await hostModel.findOne({
-    resetPasswordToken: token,
-    resetPasswordExpiry: { $gt: Date.now() }
-  }).select("+password");
+    if (password !== confirmPassword) {
+      return res.status(400).json({ success: false, message: "Passwords do not match" });
+    }
 
-  if (!user) {
-    return res.status(400).json({
-      message: "Invalid or expired reset token"
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const host = await hostModel.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpiry: { $gt: Date.now() }
     });
+
+    if (!host) {
+      return res.status(400).json({ success: false, message: "Invalid or expired reset token" });
+    }
+
+    host.password = password;
+    host.resetPasswordToken = undefined;
+    host.resetPasswordExpiry = undefined;
+    await host.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully"
+    });
+
+  } catch (err) {
+    console.error("Reset password error:", err);
+    res.status(500).json({ success: false, message: "Password reset failed" });
   }
-
-  user.password = password;
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpiry = undefined;
-
-  await user.save();
-
-  res.status(200).json({
-    message: "Password reset successful. You can now login."
-  });
 };
 
 /* ================= PROFILE ================= */
 module.exports.getHostProfile = async (req, res) => {
-  res.json({ user: req.user });
+  res.json({ success: true, user: req.user });
+};
+
+/* ================= UPDATE PROFILE ================= */
+module.exports.updateHostProfile = async (req, res) => {
+  try {
+    const hostId = req.user.id;
+    const { fullname, institution, address, designation, contact, totalNumberPhysical } = req.body;
+
+    const host = await hostModel.findByIdAndUpdate(
+      hostId,
+      {
+        fullname,
+        institution,
+        address,
+        designation,
+        contact,
+        totalNumberPhysical
+      },
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    if (!host) {
+      return res.status(404).json({ success: false, message: "Host not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: host
+    });
+
+  } catch (err) {
+    console.error("Update profile error:", err);
+    res.status(500).json({ success: false, message: "Failed to update profile" });
+  }
 };
 
 /* ================= LOGOUT ================= */
 module.exports.logoutHost = async (req, res) => {
-  const token =
-    req.cookies.token || req.headers.authorization?.split(" ")[1];
+  try {
+    const token = req.cookies.refreshToken;
+    if (token) {
+      await RefreshToken.deleteOne({ token });
+    }
 
-  if (token) {
-    await blackListTokenModel.create({ token });
+    res.clearCookie("refreshToken");
+    res.json({ success: true, message: "Logged out successfully" });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Logout failed" });
   }
+};
 
-  res.clearCookie("token");
-  res.json({ message: "Logged out" });
+/* ================= REFRESH ACCESS TOKEN ================= */
+module.exports.refreshAccessToken = async (req, res) => {
+  try {
+    const token = req.cookies.refreshToken;
+    if (!token) {
+      return res.status(401).json({ success: false, message: "Refresh token missing" });
+    }
+
+    const storedToken = await RefreshToken.findOne({ token });
+    if (!storedToken) {
+      return res.status(403).json({ success: false, message: "Invalid refresh token" });
+    }
+
+    const payload = require("jsonwebtoken").verify(
+      token,
+      process.env.JWT_REFRESH_SECRET
+    );
+
+    // Fetch the host with the ID from the token
+    const host = await hostModel.findById(payload._id).select("-password");
+    if (!host) {
+      return res.status(404).json({ success: false, message: "Host not found" });
+    }
+
+    const newAccessToken = generateAccessToken({
+      _id: payload._id,
+      role: payload.role
+    });
+
+    // 🔄 Generate new refresh token to extend session
+    const newRefreshToken = generateRefreshToken({
+      _id: payload._id,
+      role: payload.role
+    });
+
+    // Update refresh token in database
+    await RefreshToken.findByIdAndUpdate(
+      storedToken._id,
+      {
+        token: newRefreshToken,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      },
+      { new: true }
+    );
+
+    // 🍪 Issue new refresh token cookie with fresh 7-day expiry
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    res.status(200).json({
+      success: true,
+      accessToken: newAccessToken,
+      user: { ...host.toObject ? host.toObject() : host, role: 'host' }
+    });
+  } catch (err) {
+    console.error("Refresh token error:", err);
+    res.status(500).json({ success: false, message: "Failed to refresh token" });
+  }
 };

@@ -1,6 +1,6 @@
 const express = require("express");
 const userController = require("../controllers/user.controller");
-const { body } = require("express-validator");
+const { body, validationResult } = require("express-validator");
 const authMiddleware = require("../middleware/auth.middleware");
 
 const router = express.Router();
@@ -24,9 +24,8 @@ router.post(
       .withMessage("Last name is required"),
 
     body("age")
-      .isNumeric()
-      .notEmpty()
-      .withMessage("Age is required and must be a number"),
+      .isInt({ min: 1 })
+      .withMessage("Age must be a valid number"),
 
     body("educationLevel")
       .notEmpty()
@@ -41,11 +40,25 @@ router.post(
       .withMessage("Password must be at least 8 characters long"),
 
     body("confirmPassword")
-      .isLength({ min: 8 })
-      .withMessage("Confirm password must be at least 8 characters long"),
+      .custom((value, { req }) => {
+        if (value !== req.body.password) {
+          throw new Error("Passwords do not match");
+        }
+        return true;
+      }),
 
     body("disabilityType").optional(),
   ],
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+    }
+    next();
+  },
   userController.registerUser
 );
 
@@ -55,56 +68,77 @@ router.post(
   [
     body("email").isEmail().withMessage("Invalid email"),
     body("password")
-      .isLength({ min: 8 })
-      .withMessage("Password must be at least 8 characters long"),
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters long"),
   ],
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+    }
+    next();
+  },
   userController.loginUser
 );
 
-/* ================= 🔐 FORGOT PASSWORD (USER) ================= */
+/* ================= 🔄 REFRESH ACCESS TOKEN ================= */
+router.post("/refresh-token", userController.refreshAccessToken);
+
+/* ================= FORGOT PASSWORD ================= */
 router.post(
   "/forgot-password",
-  [
-    body("email")
-      .isEmail()
-      .withMessage("Please enter a valid email address"),
-  ],
+  [body("email").isEmail().withMessage("Invalid email")],
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+    }
+    next();
+  },
   userController.forgotPassword
 );
 
-/* ================= 🔐 RESET PASSWORD (USER) ================= */
+/* ================= RESET PASSWORD ================= */
 router.post(
   "/reset-password/:token",
   [
     body("password")
       .isLength({ min: 8 })
       .withMessage("Password must be at least 8 characters long"),
-
     body("confirmPassword")
-      .isLength({ min: 8 })
-      .withMessage("Confirm password must be at least 8 characters long"),
+      .custom((value, { req }) => {
+        if (value !== req.body.password) {
+          throw new Error("Passwords do not match");
+        }
+        return true;
+      }),
   ],
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+    }
+    next();
+  },
   userController.resetPassword
 );
 
-/* ================= VERIFY EMAIL ================= */
-router.get(
-  "/verify/:token",
-  userController.verifyEmail
-);
-
 /* ================= USER PROFILE ================= */
-router.get(
-  "/profile",
-  authMiddleware,
-  userController.getUserProfile
-);
+router.get("/profile", authMiddleware, userController.getUserProfile);
 
-/* ================= LOGOUT USER ================= */
-router.get(
-  "/logout",
-  authMiddleware,
-  userController.logoutUser
-);
+/* ================= UPDATE PROFILE ================= */
+router.put("/profile", authMiddleware, userController.updateUserProfile);
+
+/* ================= LOGOUT ================= */
+router.get("/logout", userController.logoutUser);
 
 module.exports = router;

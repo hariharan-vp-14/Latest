@@ -35,11 +35,8 @@ const userSchema = new mongoose.Schema(
     ========================== */
     isVerified: {
       type: Boolean,
-      default: false,
+      default: true,
     },
-
-    verificationToken: String,
-    verificationTokenExpiry: Date,
 
     /* =========================
        🔐 FORGOT PASSWORD
@@ -87,5 +84,5 @@ userSchema.methods.comparePassword = async function (password) {
   return bcrypt.compare(password, this.password);
 };
 
-const hostModel = mongoose.model("host", userSchema);
+const hostModel = mongoose.model("Host", userSchema);
 module.exports = hostModel;

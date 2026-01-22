@@ -11,6 +11,45 @@ const router = express.Router();
    HOST → CREATE EVENT
 ================================================= */
 router.post(
+  "/",
+  authMiddleware,
+  roleMiddleware("host"),
+  [
+    body("eventName")
+      .isLength({ min: 3 })
+      .withMessage("Event name must be at least 3 characters long"),
+
+    body("description")
+      .isLength({ min: 10 })
+      .withMessage("Description must be at least 10 characters long"),
+
+    body("eventDate")
+      .isISO8601()
+      .withMessage("Invalid date format"),
+
+    body("eventTime")
+      .notEmpty()
+      .withMessage("Event time is required"),
+
+    body("meetingLink")
+      .isURL()
+      .withMessage("Valid Zoom / Google Meet link is required"),
+
+    body("category")
+      .isIn(["tech", "creative", "education", "career"])
+      .withMessage("Invalid category"),
+
+    body("capacity")
+      .isInt({ min: 1 })
+      .withMessage("Capacity must be at least 1"),
+  ],
+  eventController.createEvent
+);
+
+/* =================================================
+   HOST → CREATE EVENT (LEGACY ROUTE)
+================================================= */
+router.post(
   "/create",
   authMiddleware,
   roleMiddleware("host"),
@@ -47,6 +86,16 @@ router.post(
 );
 
 /* =================================================
+   HOST → GET HOST'S EVENTS
+================================================= */
+router.get(
+  "/host-events",
+  authMiddleware,
+  roleMiddleware("host"),
+  eventController.getHostEvents
+);
+
+/* =================================================
    PUBLIC → GET APPROVED EVENTS
 ================================================= */
 router.get("/", eventController.getApprovedEvents);
@@ -65,6 +114,15 @@ router.get(
    PUBLIC → GET EVENT BY ID
 ================================================= */
 router.get("/:eventId", eventController.getEventById);
+
+/* =================================================
+   PUBLIC → REGISTER FOR EVENT
+================================================= */
+router.post(
+  "/:eventId/register",
+  authMiddleware,
+  eventController.registerForEvent
+);
 router.put(
   "/:eventId",
   authMiddleware,

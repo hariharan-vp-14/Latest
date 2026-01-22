@@ -34,12 +34,7 @@ module.exports.createAdministrator = async (data) => {
 /* =================================================
    SEND VERIFICATION EMAIL (ADMIN)
 ================================================= */
-module.exports.sendVerificationEmail = async (email, token) => {
-  const BASE_URL =
-    process.env.BASE_URL || `http://localhost:${process.env.PORT || 4000}`;
-
-  const verificationLink = `${BASE_URL}/administrator/verify/${token}`;
-
+module.exports.sendVerificationEmail = async (email, token, role = 'Administrator') => {
   let transporter;
 
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
@@ -68,18 +63,18 @@ module.exports.sendVerificationEmail = async (email, token) => {
   const info = await transporter.sendMail({
     from: `"TalentConnect Pro" <${process.env.EMAIL_USER || "no-reply@app.com"}>`,
     to: email,
-    subject: "Verify your administrator account",
+    subject: `Welcome to Talent - ${role} Account Created`,
     html: `
-      <h2>Welcome to TalentConnect Pro (Admin)</h2>
-      <p>Please verify your account by clicking the link below:</p>
-      <a href="${verificationLink}">Verify Email</a>
-      <p>This link expires in 24 hours.</p>
+      <h2>Welcome To Talent</h2>
+      <p>You have successfully created a <strong>${role}</strong> account.</p>
+      <p>Your account is now active and ready to use.</p>
+      <p>Thank you for joining Talent!</p>
     `
   });
 
   const previewUrl = nodemailer.getTestMessageUrl(info);
   if (previewUrl) {
-    console.log("📧 Admin verification email preview:", previewUrl);
+    console.log("📧 Admin account creation email preview:", previewUrl);
   }
 };
 

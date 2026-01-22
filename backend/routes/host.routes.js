@@ -1,6 +1,6 @@
 const express = require("express");
 const hostController = require("../controllers/host.controllers");
-const { body } = require("express-validator");
+const { body, validationResult } = require("express-validator");
 const authMiddleware = require("../middleware/auth.middleware");
 
 const router = express.Router();
@@ -26,18 +26,33 @@ router.post(
       .withMessage("Password must be at least 6 characters long"),
 
     body("confirmPassword")
-      .isLength({ min: 6 })
-      .withMessage("Confirm password must be at least 6 characters long"),
+      .custom((value, { req }) => {
+        if (value !== req.body.password) {
+          throw new Error("Passwords do not match");
+        }
+        return true;
+      }),
 
     body("institution").optional(),
     body("address").optional(),
     body("designation").optional(),
     body("contact").optional(),
+
     body("totalNumberPhysical")
       .optional()
-      .isNumeric()
+      .isInt({ min: 0 })
       .withMessage("Total number physical must be a number"),
   ],
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+    }
+    next();
+  },
   hostController.registerHost
 );
 
@@ -50,21 +65,37 @@ router.post(
       .isLength({ min: 6 })
       .withMessage("Password must be at least 6 characters long"),
   ],
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+    }
+    next();
+  },
   hostController.loginHost
 );
 
-/* ================= 🔐 FORGOT PASSWORD (HOST) ================= */
+/* ================= FORGOT PASSWORD ================= */
 router.post(
   "/forgot-password",
-  [
-    body("email")
-      .isEmail()
-      .withMessage("Please enter a valid email address"),
-  ],
+  [body("email").isEmail().withMessage("Invalid email")],
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+    }
+    next();
+  },
   hostController.forgotPassword
 );
 
-/* ================= 🔐 RESET PASSWORD (HOST) ================= */
+/* ================= RESET PASSWORD ================= */
 router.post(
   "/reset-password/:token",
   [
@@ -73,30 +104,36 @@ router.post(
       .withMessage("Password must be at least 6 characters long"),
 
     body("confirmPassword")
-      .isLength({ min: 6 })
-      .withMessage("Confirm password must be at least 6 characters long"),
+      .custom((value, { req }) => {
+        if (value !== req.body.password) {
+          throw new Error("Passwords do not match");
+        }
+        return true;
+      }),
   ],
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+    }
+    next();
+  },
   hostController.resetPassword
 );
 
-/* ================= VERIFY EMAIL ================= */
-router.get(
-  "/verify/:token",
-  hostController.verifyEmail
-);
+/* ================= PROFILE ================= */
+router.get("/profile", authMiddleware, hostController.getHostProfile);
 
-/* ================= HOST PROFILE ================= */
-router.get(
-  "/profile",
-  authMiddleware,
-  hostController.getHostProfile
-);
+/* ================= UPDATE PROFILE ================= */
+router.put("/profile", authMiddleware, hostController.updateHostProfile);
 
-/* ================= LOGOUT HOST ================= */
-router.get(
-  "/logout",
-  authMiddleware,
-  hostController.logoutHost
-);
+/* ================= LOGOUT ================= */
+router.get("/logout", authMiddleware, hostController.logoutHost);
+
+/* ================= REFRESH TOKEN ================= */
+router.post("/refresh-token", hostController.refreshAccessToken);
 
 module.exports = router;
