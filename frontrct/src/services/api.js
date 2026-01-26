@@ -34,11 +34,11 @@ class APIService {
       headers['Authorization'] = `Bearer ${this.accessToken}`;
       // Show first 20 chars and last 20 chars of token for debugging
       const tokenPreview = `${this.accessToken.substring(0, 20)}...${this.accessToken.substring(this.accessToken.length - 20)}`;
-      console.log('📤 Sending request with Authorization header');
+      console.log('[API] Sending request with Authorization header');
       console.log('   - Endpoint:', endpoint);
       console.log('   - Token preview:', tokenPreview);
     } else {
-      console.warn('⚠️ No access token available for request to', endpoint);
+      console.warn('[API] No access token available for request to', endpoint);
     }
 
     try {
@@ -54,7 +54,7 @@ class APIService {
 
       const data = response.status !== 204 ? await response.json() : null;
 
-      console.log(`✅ Response received from ${endpoint}:`, {
+      console.log(`[API] Response received from ${endpoint}:`, {
         status: response.status,
         hasAccessToken: data?.accessToken ? true : false,
         tokenLength: data?.accessToken ? data.accessToken.length : 0,
@@ -78,7 +78,7 @@ class APIService {
   async handle401(endpoint, options) {
     // Don't try to refresh the refresh-token endpoint itself - that would cause infinite loops
     if (endpoint.includes('/refresh-token')) {
-      console.error('❌ Refresh token endpoint returned 401 - session is invalid');
+      console.error('[API] Refresh token endpoint returned 401 - session is invalid');
       this.clearAuth();
       localStorage.removeItem('userRole');
       window.location.href = '/login';
@@ -95,11 +95,11 @@ class APIService {
 
     try {
       const storedRole = localStorage.getItem('userRole') || 'user';
-      console.log('🔄 Attempting to refresh token for role:', storedRole);
+      console.log('[API] Attempting to refresh token for role:', storedRole);
       
       // For now, host tokens don't refresh - if they expire, user must re-login
       // This is temporary until we implement refresh properly
-      console.error('❌ Host session expired - token lifetime exceeded');
+      console.error('[API] Host session expired - token lifetime exceeded');
       this.clearAuth();
       localStorage.removeItem('userRole');
       window.location.href = '/login';
@@ -117,11 +117,11 @@ class APIService {
       console.log('     - this.accessToken length:', this.accessToken ? this.accessToken.length : 'null');
       console.log('     - Token preview:', this.accessToken ? `${this.accessToken.substring(0, 20)}...` : 'null');
       
-      console.log('✅ Token refreshed successfully');
+      console.log('[API] Token refreshed successfully');
       this.processQueue(null, data.accessToken);
       return this.request(endpoint, options);
     } catch (err) {
-      console.error('❌ Token refresh failed:', err.message);
+      console.error('[API] Token refresh failed:', err.message);
       this.processQueue(err, null);
       this.clearAuth();
       localStorage.removeItem('userRole');
@@ -134,7 +134,7 @@ class APIService {
 
   /* ================= AUTH HELPERS ================= */
   setAuth(accessToken, user = null) {
-    console.log('🔑 setAuth() called with:');
+    console.log('[API] setAuth() called with:');
     console.log('   - accessToken provided:', !!accessToken);
     console.log('   - accessToken length:', accessToken ? accessToken.length : 'N/A');
     console.log('   - user provided:', !!user);
@@ -162,7 +162,7 @@ class APIService {
     const endpoint = roleMap[role] || roleMap['user'];
     
     try {
-      console.log('🔄 Calling refresh endpoint:', endpoint);
+      console.log('[API] Calling refresh endpoint:', endpoint);
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         method: 'POST',
         credentials: 'include',
@@ -190,7 +190,7 @@ class APIService {
       }
       return data;
     } catch (err) {
-      console.error('❌ Refresh token error:', err.message);
+      console.error('[API] Refresh token error:', err.message);
       throw err;
     }
   }

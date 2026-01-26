@@ -643,7 +643,7 @@ const AdminSignup = ({ onBack }) => {
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full bg-purple-600 hover:bg-purple-700"
+            className="w-full bg-blue-600 hover:bg-blue-700"
             loading={loading}
           >
             Create Admin Account

@@ -73,7 +73,7 @@ export const HostEventManagement = () => {
       case 'rejected':
         return <Badge variant="danger">✗ Rejected</Badge>;
       case 'pending':
-        return <Badge variant="warning">⏳ Pending Review</Badge>;
+        return <Badge variant="warning">◆ Pending Review</Badge>;
       default:
         return <Badge variant="info">Draft</Badge>;
     }

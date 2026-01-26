@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { Card, Button, Alert } from '../components/UI';
-import { Sun, Moon, Lock, Bell, Shield } from 'lucide-react';
+import { Sun, Moon, Lock, Bell, Shield, Settings as SettingsIcon, AlertTriangle } from 'lucide-react';
 
 export const Settings = () => {
   const { user, logout } = useAuth();
@@ -10,10 +10,10 @@ export const Settings = () => {
   const [activeSection, setActiveSection] = useState('general');
 
   const sections = [
-    { id: 'general', label: 'General', icon: '⚙️' },
-    { id: 'privacy', label: 'Privacy & Security', icon: '🔒' },
-    { id: 'notifications', label: 'Notifications', icon: '🔔' },
-    { id: 'danger', label: 'Danger Zone', icon: '⚠️' },
+    { id: 'general', label: 'General', icon: SettingsIcon },
+    { id: 'privacy', label: 'Privacy & Security', icon: Lock },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
   ];
 
   return (
@@ -28,7 +28,9 @@ export const Settings = () => {
           {/* Sidebar */}
           <div className="md:col-span-1">
             <div className="bg-white rounded-lg shadow-custom p-4">
-              {sections.map((section) => (
+              {sections.map((section) => {
+                const IconComponent = section.icon;
+                return (
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
@@ -38,10 +40,11 @@ export const Settings = () => {
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  <span className="text-lg">{section.icon}</span>
+                  <IconComponent size={20} />
                   {section.label}
                 </button>
-              ))}
+              );
+              })}
             </div>
           </div>
 

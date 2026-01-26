@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { X } from 'lucide-react';
+import { X, Info, CheckCircle, AlertTriangle, XCircle, Inbox } from 'lucide-react';
 
 export const NotificationCenter = () => {
   const { notifications, removeNotification } = useApp();
@@ -32,15 +32,16 @@ const Notification = ({ notification, onClose }) => {
   };
 
   const icons = {
-    info: '📌',
-    success: '✅',
-    warning: '⚠️',
-    error: '❌',
+    info: Info,
+    success: CheckCircle,
+    warning: AlertTriangle,
+    error: XCircle,
   };
 
+  const IconComponent = icons[notification.type];
   return (
     <div className={`border rounded-lg p-4 shadow-custom-lg flex items-center gap-3 animate-slide-up ${typeStyles[notification.type]}`}>
-      <span className="text-xl flex-shrink-0">{icons[notification.type]}</span>
+      <IconComponent size={20} className="flex-shrink-0" />
       <p className="flex-1 text-sm font-medium">{notification.message}</p>
       <button
         onClick={onClose}
@@ -116,10 +117,10 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   );
 };
 
-export const EmptyState = ({ icon = '📭', title = 'No items found', description = 'Get started by creating your first item' }) => {
+export const EmptyState = ({ icon: IconComponent = Inbox, title = 'No items found', description = 'Get started by creating your first item' }) => {
   return (
     <div className="flex flex-col items-center justify-center py-12">
-      <div className="text-6xl mb-4">{icon}</div>
+      <div className="mb-4"><IconComponent size={64} className="text-gray-400" /></div>
       <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
       <p className="text-gray-600">{description}</p>
     </div>
