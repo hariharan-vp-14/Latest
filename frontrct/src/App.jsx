@@ -4,6 +4,8 @@ import { AppProvider } from './context/AppContext';
 import { Layout } from './components/Layout';
 import { NotificationCenter } from './components/Utilities';
 import { Home } from './pages/Home';
+import { HowItWorksPage } from './pages/HowItWorksPage';
+import { About } from './pages/About';
 import { Login, Signup } from './pages/Auth';
 import { Events, CreateEvent } from './pages/Events';
 import { Profile } from './pages/Profile';
@@ -47,6 +49,8 @@ function AppRoutes() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/how-it-works" element={<HowItWorksPage />} />
+          <Route path="/about" element={<About />} />
 
           <Route
             path="/login"

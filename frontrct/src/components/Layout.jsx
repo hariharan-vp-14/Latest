@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useApp } from '../context/AppContext';
-import { Menu, X, LogOut, Settings, User, Moon, Sun } from 'lucide-react';
+import { Menu, X, LogOut, Settings, User, Calendar, Plus, CheckCircle } from 'lucide-react';
+import logo from '../assets/talentconnect-logo.svg';
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { user, logout, isAuthenticated, userRole } = useAuth();
-  const { toggleTheme, theme } = useApp();
 
   const handleLogout = () => {
     logout();
@@ -24,10 +23,12 @@ export const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 font-bold text-xl text-blue-600 hover:text-blue-700 transition">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white">
-              <span className="text-lg font-bold">T</span>
-            </div>
-            <span className="hidden sm:inline">TalentConnect</span>
+            <img
+              src={logo}
+              alt="TalentConnect Pro"
+              className="h-11 w-11 rounded-lg bg-white object-contain"
+            />
+            <span className="hidden sm:inline">TalentConnect Pro</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -35,22 +36,28 @@ export const Header = () => {
             <Link to="/" className="text-gray-700 hover:text-blue-600 transition font-medium">
               Home
             </Link>
+            <Link to="/how-it-works" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              How It Works
+            </Link>
             {isAuthenticated && (
               <>
                 {userRole === 'host' && (
                   <>
-                    <Link to="/host/events" className="text-gray-700 hover:text-blue-600 transition font-medium">
-                      📅 My Events
+                    <Link to="/host/events" className="text-gray-700 hover:text-blue-600 transition font-medium flex items-center gap-2">
+                      <Calendar size={16} />
+                      My Events
                     </Link>
-                    <Link to="/host/create-event" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
-                      ➕ Create Event
+                    <Link to="/host/create-event" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium flex items-center gap-2">
+                      <Plus size={16} />
+                      Create Event
                     </Link>
                   </>
                 )}
                 {userRole === 'admin' && (
                   <Link to="/admin/events" className="text-gray-700 hover:text-blue-600 transition font-medium flex items-center gap-1">
                     <Settings size={16} />
-                    ✅ Review Events
+                    <CheckCircle size={16} />
+                    Review Events
                   </Link>
                 )}
               </>
@@ -59,14 +66,6 @@ export const Header = () => {
 
           {/* Desktop Right Section */}
           <div className="hidden md:flex items-center gap-4">
-            <button
-              onClick={toggleTheme}
-              className="p-2 hover:bg-gray-200 rounded-lg transition"
-              title="Toggle theme"
-            >
-              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-            </button>
-
             {isAuthenticated ? (
               <div className="flex items-center gap-4 pl-4 border-l border-gray-300">
                 <div className="text-right hidden sm:block">
@@ -125,12 +124,6 @@ export const Header = () => {
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
             <button
-              onClick={toggleTheme}
-              className="p-2 hover:bg-gray-200 rounded-lg transition"
-            >
-              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-            </button>
-            <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 hover:bg-gray-200 rounded-lg transition"
             >
@@ -145,22 +138,28 @@ export const Header = () => {
             <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition">
               Home
             </Link>
+            <Link to="/how-it-works" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition">
+              How It Works
+            </Link>
             {isAuthenticated && (
               <>
                 {userRole === 'host' && (
                   <>
-                    <Link to="/host/events" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition">
-                      📅 My Events
+                    <Link to="/host/events" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition">
+                      <Calendar size={16} />
+                      My Events
                     </Link>
-                    <Link to="/host/create-event" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 bg-blue-600 text-white rounded-lg transition font-medium">
-                      ➕ Create Event
+                    <Link to="/host/create-event" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg transition font-medium">
+                      <Plus size={16} />
+                      Create Event
                     </Link>
                   </>
                 )}
                 {userRole === 'admin' && (
                   <Link to="/admin/events" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition">
                     <Settings size={16} />
-                    ✅ Review Events
+                    <CheckCircle size={16} />
+                    Review Events
                   </Link>
                 )}
               </>
@@ -198,42 +197,202 @@ export const Header = () => {
 };
 
 export const Footer = () => {
+  const [email, setEmail] = useState('');
+  const [subscribeSuccess, setSubscribeSuccess] = useState(false);
+  const [subscribeError, setSubscribeError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleNewsletterSubscribe = async (e) => {
+    e.preventDefault();
+    setSubscribeError('');
+    setSubscribeSuccess(false);
+
+    if (!email.trim()) {
+      setSubscribeError('Please enter a valid email address');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/newsletter/subscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Subscription failed');
+      }
+
+      setSubscribeSuccess(true);
+      setEmail('');
+      // Reset success message after 5 seconds
+      setTimeout(() => setSubscribeSuccess(false), 5000);
+    } catch (error) {
+      setSubscribeError(error.message || 'Error subscribing. Please try again.');
+      console.error('Newsletter subscription error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <footer className="bg-gray-900 text-gray-300 mt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
-          <div>
-            <h3 className="text-white font-bold mb-4">TalentConnect Pro</h3>
-            <p className="text-sm">Empowering students with disabilities through accessible virtual conferences.</p>
+    <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-gray-300 mt-20 border-t border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* Newsletter Section */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-8 mb-12 text-white">
+          <div className="max-w-2xl mx-auto">
+            <h3 className="text-2xl font-bold mb-2">Stay Updated!</h3>
+            <p className="text-blue-100 mb-6">
+              Subscribe to our newsletter for the latest events, accessibility tips, and updates.
+            </p>
+            <form onSubmit={handleNewsletterSubscribe} className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-50"
+                required
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Subscribing...' : 'Subscribe'}
+              </button>
+            </form>
+            {subscribeSuccess && (
+              <p className="text-green-200 text-sm mt-3 flex items-center gap-2">
+                <span>✓</span>
+                <span>Thank you! Check your email to confirm your subscription.</span>
+              </p>
+            )}
+            {subscribeError && (
+              <p className="text-red-200 text-sm mt-3 flex items-center gap-2">
+                <span>⚠</span>
+                <span>{subscribeError}</span>
+              </p>
+            )}
           </div>
+        </div>
+
+        {/* Main Footer Content - 4 Column Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+          {/* Column 1: About */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-white font-bold text-lg mb-2">TalentConnect Pro</h3>
+              <p className="text-blue-400 text-xs font-semibold">Empowering Accessibility</p>
+            </div>
+            <p className="text-sm leading-relaxed text-gray-400">
+              Empowering students with disabilities through accessible virtual conferences.
+            </p>
+            <p className="text-xs text-gray-500">
+              Making professional opportunities accessible to everyone, regardless of ability.
+            </p>
+          </div>
+
+          {/* Column 2: Quick Links */}
           <div>
-            <h4 className="text-white font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/" className="hover:text-white transition">Home</Link></li>
-              <li><Link to="/events" className="hover:text-white transition">Events</Link></li>
-              <li><a href="#" className="hover:text-white transition">About</a></li>
+            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Quick Links</h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link to="/" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+                  <span className="text-blue-400">→</span> Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/events" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+                  <span className="text-blue-400">→</span> Events
+                </Link>
+              </li>
+              <li>
+                <Link to="/how-it-works" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+                  <span className="text-blue-400">→</span> How It Works
+                </Link>
+              </li>
+              <li>
+                <a href="#about" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+                  <span className="text-blue-400">→</span> About
+                </a>
+              </li>
             </ul>
           </div>
+
+          {/* Column 3: Support */}
           <div>
-            <h4 className="text-white font-semibold mb-4">Support</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white transition">Help Center</a></li>
-              <li><a href="#" className="hover:text-white transition">Contact Us</a></li>
-              <li><a href="#" className="hover:text-white transition">FAQ</a></li>
+            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Support</h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <a href="#help" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+                  <span className="text-blue-400">→</span> Help Center
+                </a>
+              </li>
+              <li>
+                <a href="#contact" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+                  <span className="text-blue-400">→</span> Contact Us
+                </a>
+              </li>
+              <li>
+                <a href="#faq" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+                  <span className="text-blue-400">→</span> FAQ
+                </a>
+              </li>
+              <li>
+                <a href="#report" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+                  <span className="text-blue-400">→</span> Report Issue
+                </a>
+              </li>
             </ul>
           </div>
+
+          {/* Column 4: Legal */}
           <div>
-            <h4 className="text-white font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white transition">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white transition">Terms of Service</a></li>
+            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Legal</h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <a href="#privacy" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+                  <span className="text-blue-400">→</span> Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a href="#terms" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+                  <span className="text-blue-400">→</span> Terms of Service
+                </a>
+              </li>
+              <li>
+                <a href="#accessibility" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+                  <span className="text-blue-400">→</span> Accessibility
+                </a>
+              </li>
+              <li>
+                <a href="#cookies" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
+                  <span className="text-blue-400">→</span> Cookie Policy
+                </a>
+              </li>
             </ul>
           </div>
         </div>
-        <div className="border-t border-gray-700 pt-8">
-          <p className="text-center text-sm">
-            © 2024 TalentConnect Pro. All rights reserved.
-          </p>
+
+        {/* Divider */}
+        <div className="border-t border-gray-800 pt-8">
+          {/* Copyright Section */}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-500">
+              © 2026 TalentConnect Pro. All rights reserved.
+            </p>
+            <p className="text-xs text-gray-600">
+              Building an accessible future for students with disabilities worldwide.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

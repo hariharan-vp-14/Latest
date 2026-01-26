@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { useForm } from '../hooks/useCustom';
 import { Input, Button, Alert, Card } from '../components/UI';
-import { Mail, Lock, Eye, EyeOff, User, Building, Phone, MapPin, Briefcase, Users, ArrowLeft, LogIn } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, Building, Phone, MapPin, Briefcase, Users, ArrowLeft, LogIn, Settings, Smile, Shield, Zap, CheckCircle } from 'lucide-react';
 
 // ==================== LOGIN PAGE ====================
 export const Login = () => {
@@ -86,11 +86,11 @@ export const Login = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-white shadow-2xl rounded-2xl border border-gray-100">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-block bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full p-3 mb-4">
+          <div className="inline-block bg-gradient-to-br from-blue-600 to-blue-700 rounded-full p-3 mb-4">
             <LogIn size={24} className="text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
@@ -114,11 +114,23 @@ export const Login = () => {
                   setLoginError('');
                 }}
                 className={`py-3 px-3 rounded-lg font-medium transition text-sm ${userRole === role
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
                   }`}
               >
-                {role === 'user' ? '👤 User' : role === 'admin' ? '⚙️ Admin' : '🏢 Host'}
+                {role === 'user' ? (
+                  <span className="flex items-center justify-center gap-1">
+                    <User size={16} /> User
+                  </span>
+                ) : role === 'admin' ? (
+                  <span className="flex items-center justify-center gap-1">
+                    <Settings size={16} /> Admin
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-1">
+                    <Building size={16} /> Host
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -126,7 +138,7 @@ export const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+            <label className="flex text-sm font-medium text-gray-700 mb-2 items-center gap-2">
               <Mail size={16} className="text-blue-600" />
               Email Address
             </label>
@@ -179,7 +191,7 @@ export const Login = () => {
               </button>
             </div>
             {errors.password && touched.password && (
-              <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">⚠️ {errors.password}</p>
+              <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1"><AlertTriangle size={16} /> {errors.password}</p>
             )}
           </div>
 
@@ -218,7 +230,9 @@ export const Login = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white shadow-2xl">
             <div className="text-center py-8">
-              <div className="text-5xl mb-4">👋</div>
+              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Smile size={32} className="text-blue-600" />
+              </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back, Administrator!</h2>
               <p className="text-gray-600 mb-6">Ready to manage events?</p>
               <p className="text-sm text-gray-500 mb-8">Accessing your admin dashboard...</p>
@@ -239,7 +253,9 @@ export const Login = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white shadow-2xl">
             <div className="text-center py-8">
-              <div className="text-5xl mb-4">🚀</div>
+              <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Zap size={32} className="text-purple-600" />
+              </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">No Account Found</h2>
               <p className="text-gray-600 mb-2">
                 We couldn't find an account with this email.
@@ -253,7 +269,7 @@ export const Login = () => {
                   variant="primary"
                   className="w-full bg-green-600 hover:bg-green-700"
                 >
-                  ✨ Sign Up Now
+                  <Zap size={16} className="inline mr-2" /> Sign Up Now
                 </Button>
                 <Button
                   onClick={() => setShowSignupPrompt(false)}
@@ -622,7 +638,9 @@ const UserSignup = ({ onBack }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white shadow-2xl">
             <div className="text-center py-8">
-              <div className="text-5xl mb-4">🎉</div>
+              <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={32} className="text-green-600" />
+              </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to TalentConnect!</h2>
               <p className="text-gray-600 mb-2">
                 Your account has been created successfully.
@@ -635,7 +653,7 @@ const UserSignup = ({ onBack }) => {
                 variant="primary"
                 className="w-full bg-blue-600 hover:bg-blue-700"
               >
-                🚀 Explore Events
+                <Zap size={16} className="inline mr-2" /> Explore Events
               </Button>
             </div>
           </Card>
@@ -647,7 +665,9 @@ const UserSignup = ({ onBack }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white shadow-2xl">
             <div className="text-center py-8">
-              <div className="text-5xl mb-4">🔐</div>
+              <div className="w-16 h-16 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Shield size={32} className="text-amber-600" />
+              </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Already Exists</h2>
               <p className="text-gray-600 mb-2">
                 This email is already registered.
@@ -661,7 +681,7 @@ const UserSignup = ({ onBack }) => {
                   variant="primary"
                   className="w-full bg-blue-600 hover:bg-blue-700"
                 >
-                  🔓 Sign In
+                  <LogIn size={16} className="inline mr-2" /> Sign In
                 </Button>
                 <Button
                   onClick={() => setShowExistingAccountModal(false)}
@@ -733,9 +753,9 @@ const AdminRegister = ({ onBack, onSwitchTab }) => {
       } catch (err) {
         // Check if error is about admin limit
         if (err.message && err.message.includes('Maximum of 5 administrators')) {
-          setError('❌ Cannot register more than 5 administrators. System limit reached.');
+          setError('Cannot register more than 5 administrators. System limit reached.');
         } else if (err.message && err.message.includes('already exists')) {
-          setError('❌ This email is already registered.');
+          setError('This email is already registered.');
         } else {
           setError(err.message || 'Registration failed. Please try again.');
         }
@@ -870,7 +890,7 @@ const AdminRegister = ({ onBack, onSwitchTab }) => {
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full bg-purple-600 hover:bg-purple-700"
+            className="w-full bg-blue-600 hover:bg-blue-700"
             loading={loading}
           >
             Create Admin Account
@@ -883,14 +903,16 @@ const AdminRegister = ({ onBack, onSwitchTab }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white shadow-2xl">
             <div className="text-center py-8">
-              <div className="text-5xl mb-4">✅</div>
+              <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={32} className="text-green-600" />
+              </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Successfully Registered!</h2>
               <p className="text-gray-600 mb-6">Welcome to TalentConnect Pro, Administrator!</p>
               <p className="text-sm text-gray-500 mb-8">You are now logged in and ready to manage events.</p>
               <Button
                 onClick={handleModalClose}
                 variant="primary"
-                className="w-full bg-purple-600 hover:bg-purple-700"
+                className="w-full bg-blue-600 hover:bg-blue-700"
               >
                 Go to Home
               </Button>
@@ -1007,7 +1029,7 @@ const AdminLogin = ({ onBack, onSwitchTab }) => {
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full bg-purple-600 hover:bg-purple-700"
+            className="w-full bg-blue-600 hover:bg-blue-700"
             loading={loading}
           >
             Login
@@ -1020,14 +1042,16 @@ const AdminLogin = ({ onBack, onSwitchTab }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white shadow-2xl">
             <div className="text-center py-8">
-              <div className="text-5xl mb-4">👋</div>
+              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Smile size={32} className="text-blue-600" />
+              </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back, Administrator!</h2>
               <p className="text-gray-600 mb-6">Ready to manage events?</p>
               <p className="text-sm text-gray-500 mb-8">You are now logged in.</p>
               <Button
                 onClick={handleModalClose}
                 variant="primary"
-                className="w-full bg-purple-600 hover:bg-purple-700"
+                className="w-full bg-blue-600 hover:bg-blue-700"
               >
                 Go to Home
               </Button>
@@ -1287,7 +1311,9 @@ const HostSignup = ({ onBack }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white shadow-2xl">
             <div className="text-center py-8">
-              <div className="text-5xl mb-4">✅</div>
+              <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={32} className="text-green-600" />
+              </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Successfully Registered!</h2>
               <p className="text-gray-600 mb-6">Welcome to TalentConnect Pro, Host!</p>
               <p className="text-sm text-gray-500 mb-8">You can now create and manage events.</p>
@@ -1308,7 +1334,9 @@ const HostSignup = ({ onBack }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white shadow-2xl">
             <div className="text-center py-8">
-              <div className="text-5xl mb-4">🔐</div>
+              <div className="w-16 h-16 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Shield size={32} className="text-amber-600" />
+              </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Already Exists</h2>
               <p className="text-gray-600 mb-2">
                 This email is already registered.
@@ -1322,7 +1350,7 @@ const HostSignup = ({ onBack }) => {
                   variant="primary"
                   className="w-full bg-blue-600 hover:bg-blue-700"
                 >
-                  🔓 Sign In
+                  <LogIn size={16} className="inline mr-2" /> Sign In
                 </Button>
                 <Button
                   onClick={() => setShowExistingAccountModal(false)}
@@ -1369,7 +1397,7 @@ const ForgotPassword = ({ role, onBack }) => {
         <Card className="w-full max-w-md bg-white shadow-lg">
           <div className="text-center">
             <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Mail className="text-green-600" size={32} />
+              <CheckCircle className="text-green-600" size={32} />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Check Your Email</h1>
             <p className="text-gray-600 mb-6">

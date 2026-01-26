@@ -677,7 +677,7 @@ export const HostEventManagement = () => {
                 <Button
                   onClick={handleCloseViewModal}
                   variant="outline"
-                  className={viewingEvent.approvalStatus === 'pending' ? 'flex-1' : 'w-full'}
+                  className={viewingEvent.approvalStatus === 'pending' ? 'flex-1' : 'w-full'}  
                 >
                   Close
                 </Button>

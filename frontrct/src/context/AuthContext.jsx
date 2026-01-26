@@ -18,19 +18,19 @@ export const AuthProvider = ({ children }) => {
         // Try to restore from localStorage first to get the role
         const storedRole = localStorage.getItem('userRole');
         const storedAccessToken = localStorage.getItem('accessToken');
-        console.log('🔍 Stored role from localStorage:', storedRole);
-        console.log('🔍 Stored access token exists:', !!storedAccessToken);
+        console.log('[Auth] Stored role from localStorage:', storedRole);
+        console.log('[Auth] Stored access token exists:', !!storedAccessToken);
         
         if (!storedRole) {
           // No stored role means user was never logged in
-          console.log('ℹ️ No stored role - user not previously logged in');
+          console.log('[Auth] No stored role - user not previously logged in');
           setLoading(false);
           return;
         }
         
         // If we have an access token stored, use it immediately for fast session restore
         if (storedAccessToken) {
-          console.log('✅ Using stored access token for quick session restore');
+          console.log('[Auth] Using stored access token for quick session restore');
           apiService.setAuth(storedAccessToken);
           setAccessToken(storedAccessToken);
           setUserRole(storedRole);
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
           
           // Try to refresh in background to get fresh token and user data
           try {
-            console.log('🔄 Attempting to refresh token in background');
+            console.log('[Auth] Attempting to refresh token in background');
             const response = await apiService.refreshToken(storedRole);
             if (response?.accessToken && response?.user) {
               apiService.setAuth(response.accessToken);
@@ -48,10 +48,10 @@ export const AuthProvider = ({ children }) => {
               setUserRole(role);
               localStorage.setItem('userRole', role);
               localStorage.setItem('accessToken', response.accessToken);
-              console.log('✅ Token refreshed successfully');
+              console.log('[Auth] Token refreshed successfully');
             }
           } catch (refreshErr) {
-            console.warn('⚠️ Token refresh failed, but using stored token:', refreshErr.message);
+            console.warn('[Auth] Token refresh failed, but using stored token:', refreshErr.message);
           }
           
           setLoading(false);
@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
         }
         
         // If no stored token, try to refresh using the refresh token cookie
-        console.log('🔄 No stored access token - attempting refresh via cookie');
+        console.log('[Auth] No stored access token - attempting refresh via cookie');
         const response = await apiService.refreshToken(storedRole);
         if (response?.accessToken && response?.user) {
           apiService.setAuth(response.accessToken);
@@ -70,11 +70,11 @@ export const AuthProvider = ({ children }) => {
           setIsAuthenticated(true);
           localStorage.setItem('userRole', role);
           localStorage.setItem('accessToken', response.accessToken);
-          console.log('✅ Session restored successfully for role:', role);
+          console.log('[Auth] Session restored successfully for role:', role);
         }
       } catch (err) {
         // If refresh fails, user needs to log in again
-        console.warn('⚠️ Session restore failed:', err.message);
+        console.warn('[Auth] Session restore failed:', err.message);
         localStorage.removeItem('userRole');
         localStorage.removeItem('accessToken');
       } finally {
@@ -90,14 +90,14 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      console.log('🔐 Starting login process for role:', role);
+      console.log('[Auth] Starting login process for role:', role);
       const response = await apiCall();
-      console.log('📥 Login response received:', response);
+      console.log('[Auth] Login response received:', response);
       const { accessToken, user: userData } = response;
 
-      console.log('✅ Login successful for role:', role);
-      console.log('📋 Access Token:', accessToken ? `✓ Present (${accessToken.length} chars)` : '✗ Missing');
-      console.log('👤 User Data:', userData);
+      console.log('[Auth] Login successful for role:', role);
+      console.log('[Auth] Access Token:', accessToken ? `✓ Present (${accessToken.length} chars)` : '✗ Missing');
+      console.log('[Auth] User Data:', userData);
 
       apiService.setAuth(accessToken);
       setAccessToken(accessToken);
@@ -107,12 +107,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('userRole', role);
       localStorage.setItem('accessToken', accessToken);
       
-      console.log('💾 Stored role and token in localStorage');
-      console.log('📋 API Service token set:', apiService.accessToken ? `✓ (${apiService.accessToken.length} chars)` : '✗ Missing');
+      console.log('[Auth] Stored role and token in localStorage');
+      console.log('[Auth] API Service token set:', apiService.accessToken ? `✓ (${apiService.accessToken.length} chars)` : '✗ Missing');
 
       return userData;
     } catch (err) {
-      console.error('❌ Login failed:', err.message);
+      console.error('[Auth] Login failed:', err.message);
       setError(err.message);
       throw err;
     } finally {

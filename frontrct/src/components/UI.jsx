@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertCircle, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 
 export const Button = ({ 
   children, 
@@ -16,7 +17,7 @@ export const Button = ({
     secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-300',
     outline: 'border-2 border-primary-500 text-primary-500 hover:bg-primary-50 focus:ring-primary-300',
     danger: 'bg-danger text-white hover:bg-red-600 focus:ring-red-300',
-    success: 'bg-success text-white hover:bg-cyan-500 focus:ring-cyan-300',
+    success: 'bg-success text-white hover:bg-pink-500 focus:ring-pink-300',
     ghost: 'text-primary-500 hover:bg-primary-50 focus:ring-primary-300',
   };
 
@@ -207,15 +208,16 @@ export const Alert = ({ type = 'info', title, message, onClose, className = '' }
   };
 
   const icons = {
-    info: '📌',
-    success: '✅',
-    warning: '⚠️',
-    error: '❌',
+    info: AlertCircle,
+    success: CheckCircle,
+    warning: AlertTriangle,
+    error: XCircle,
   };
 
+  const IconComponent = icons[type];
   return (
     <div className={`border rounded-lg p-4 flex items-start gap-3 ${types[type]} ${className}`}>
-      <span className="text-xl">{icons[type]}</span>
+      <IconComponent size={20} className="flex-shrink-0" />
       <div className="flex-1">
         {title && <h3 className="font-semibold mb-1">{title}</h3>}
         {message && <p className="text-sm">{message}</p>}

@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { useForm } from '../hooks/useCustom';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, Input, TextArea, Badge, Select, Loading, Alert } from '../components/UI';
-import { Calendar, MapPin, Users, Share2, Heart, Edit2, Trash2, Lock, LogIn, UserPlus } from 'lucide-react';
+import { Calendar, MapPin, Users, Share2, Heart, Edit2, Trash2, Lock, LogIn, UserPlus, Tag, CheckCircle, Zap, Shield } from 'lucide-react';
 
 export const Events = () => {
   const { conferences, fetchConferences, loading, error, registerForConference } = useApp();
@@ -84,6 +84,7 @@ const EventCard = ({ event, onRegister }) => {
   const [showMeetingLink, setShowMeetingLink] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const navigate = useNavigate();
+  const { addNotification } = useApp();
 
   const handleRegister = async () => {
     if (!isAuthenticated) {
@@ -103,6 +104,11 @@ const EventCard = ({ event, onRegister }) => {
   };
 
   const handleViewDetails = () => {
+    if (!isAuthenticated) {
+      addNotification('Please sign in or sign up to view event details', 'warning');
+      navigate('/login');
+      return;
+    }
     setShowDetailsModal(true);
   };
 
@@ -136,7 +142,7 @@ const EventCard = ({ event, onRegister }) => {
           </div>
 
           {/* Meeting Link Section - Visible to authenticated users */}
-          <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+          <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
             {isAuthenticated ? (
               <div>
                 <p className="text-xs font-semibold text-blue-600 mb-2">📍 {getMeetingPlatform()} Link</p>
@@ -462,7 +468,15 @@ export const CreateEvent = () => {
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3"
                 disabled={isSubmitting || loading}
               >
-                {isSubmitting || loading ? '⏳ Creating...' : '✨ Create Event'}
+                {isSubmitting || loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Zap size={16} className="animate-pulse" /> Creating...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <Zap size={16} /> Create Event
+                  </span>
+                )}
               </Button>
               <Button
                 type="button"
@@ -506,7 +520,7 @@ const EventDetailsModal = ({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-indigo-600 p-6 text-white flex justify-between items-start">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white flex justify-between items-start">
           <div>
             <h2 className="text-2xl font-bold mb-2">{event.title}</h2>
             <Badge variant="success" className="bg-white/30">
@@ -527,7 +541,7 @@ const EventDetailsModal = ({
           {!isAuthenticated && (
             <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-6 text-center mb-6">
               <Lock size={48} className="mx-auto text-amber-600 mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-2">🔐 Login Required</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2"><Shield size={24} /> Login Required</h3>
               <p className="text-gray-600 mb-6">
                 Please login or register to view event details as a User, Host, or Administrator.
               </p>
@@ -608,7 +622,7 @@ const EventDetailsModal = ({
                 </p>
               </div>
               <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-xs text-gray-600 font-semibold mb-1">🏢 Host</p>
+                <p className="text-xs text-gray-600 font-semibold mb-1">Host</p>
                 <p className="text-lg font-bold text-gray-900">{event.host}</p>
               </div>
             </div>
@@ -623,7 +637,10 @@ const EventDetailsModal = ({
 
             {event.tags && event.tags.length > 0 && (
               <div>
-                <p className="text-xs text-gray-600 font-semibold mb-2">🔖 Tags</p>
+                <div className="flex items-center gap-1 mb-2">
+                  <Tag size={14} className="text-gray-400" />
+                  <p className="text-xs text-gray-600 font-semibold">Tags</p>
+                </div>
                 <div className="flex gap-2 flex-wrap">
                   {event.tags.map(tag => (
                     <Badge key={tag} variant="secondary">
@@ -638,22 +655,7 @@ const EventDetailsModal = ({
 
         {/* Footer */}
         <div className="sticky bottom-0 bg-gray-50 border-t p-4 flex gap-3">
-          {!isAuthenticated && (
-            <div className="w-full text-center text-sm text-gray-600">
-              <p>Login or register to view full details</p>
-            </div>
-          )}
-          {isAuthenticated && isRegistered && (
-            <Button variant="success" className="flex-1" disabled>
-              ✓ Already Registered
-            </Button>
-          )}
-          {isAuthenticated && !isRegistered && (
-            <Button onClick={onRegister} variant="primary" className="flex-1">
-              📋 Register to Join
-            </Button>
-          )}
-          <Button onClick={onClose} variant="outline" className="flex-1">
+          <Button onClick={onClose} variant="outline" className="w-full">
             Close
           </Button>
         </div>

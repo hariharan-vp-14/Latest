@@ -7,17 +7,32 @@ html {
   scroll-behavior: smooth;
 }
 
-
 body {
   font-family: 'Inter', sans-serif;
   background: #fff;
   color: #111;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html.dark body {
+  background: #111827;
+  color: #f9fafb;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
   color: #000;
+  transition: color 0.3s ease;
+}
+
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6 {
+  color: #f9fafb;
 }
 
 /* Smooth transitions */
@@ -43,6 +58,11 @@ button:focus, a:focus, input:focus {
 
 ::-webkit-scrollbar-track {
   background: #e5e5e5;
+  transition: background-color 0.3s ease;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #374151;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -50,8 +70,16 @@ button:focus, a:focus, input:focus {
   border-radius: 5px;
 }
 
+html.dark ::-webkit-scrollbar-thumb {
+  background: #1f2937;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #1d4ed8;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #374151;
 }
 
 /* Light gray theme colors */
@@ -59,6 +87,9 @@ button:focus, a:focus, input:focus {
   --color-primary: #2563eb;
   --color-primary-light: #3b82f6;
   --color-primary-dark: #1d4ed8;
+  --color-accent: #ec4899;
+  --color-accent-light: #f472b6;
+  --color-accent-dark: #db2777;
   --color-secondary: #64748b;
   --color-gray-50: #f9fafb;
   --color-gray-100: #f3f4f6;
