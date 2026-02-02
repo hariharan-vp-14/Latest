@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Card, Button, Badge, Loading, Alert } from '../components/UI';
 import { Calendar, MapPin, Users, ArrowRight, Accessibility, Globe, Share2, Lock, LogIn, UserPlus, MessageCircle, Shield, Star, Award, Zap, Heart, QrCode, Smartphone, CheckCircle2 } from 'lucide-react';
 import { Slider } from '../components/Slider';
+import api from '../services/api';
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -317,9 +318,18 @@ export const Home = () => {
   );
 };
 const FeaturedEventCard = ({ event }) => {
-  const { isAuthenticated } = useAuth();
   const { addNotification } = useApp();
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [registrationLoading, setRegistrationLoading] = useState(false);
+  const [checkingRegistration, setCheckingRegistration] = useState(false);
+  const [registrationForm, setRegistrationForm] = useState({
+    name: '',
+    age: '',
+    email: '',
+    instituteName: ''
+  });
   const navigate = useNavigate();
 
   const getMeetingPlatform = () => {
@@ -335,13 +345,58 @@ const FeaturedEventCard = ({ event }) => {
     return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   };
 
-  const handleViewDetails = () => {
-    if (!isAuthenticated) {
-      addNotification('Please sign in or sign up to view event details', 'warning');
-      navigate('/login');
-      return;
+  const handleEmailCheck = (email) => {
+    if (email) {
+      checkRegistrationStatus(email);
     }
+  };
+
+  const checkRegistrationStatus = async (email) => {
+    if (!email) return;
+    setCheckingRegistration(true);
+    try {
+      const response = await api.checkEventRegistration(email, event._id || event.id);
+      setIsRegistered(response.isRegistered);
+    } catch (error) {
+      console.error('Error checking registration:', error);
+    } finally {
+      setCheckingRegistration(false);
+    }
+  };
+
+  const handleViewDetails = () => {
     setShowDetailsModal(true);
+    // Check registration if we have email from localStorage or user input
+    const savedEmail = localStorage.getItem('registrationEmail');
+    if (savedEmail) {
+      checkRegistrationStatus(savedEmail);
+    }
+  };
+
+  const handleRegisterClick = () => {
+    setShowRegistrationModal(true);
+  };
+
+  const handleRegistrationSubmit = async (e) => {
+    e.preventDefault();
+    setRegistrationLoading(true);
+
+    try {
+      const response = await api.registerForEvent({
+        ...registrationForm,
+        eventId: event._id || event.id
+      });
+
+      addNotification(response.message, 'success');
+      setIsRegistered(true);
+      localStorage.setItem('registrationEmail', registrationForm.email);
+      setShowRegistrationModal(false);
+      setRegistrationForm({ name: '', age: '', email: '', instituteName: '' });
+    } catch (error) {
+      addNotification(error.message || 'Registration failed', 'error');
+    } finally {
+      setRegistrationLoading(false);
+    }
   };
 
   return (
@@ -441,7 +496,7 @@ const FeaturedEventCard = ({ event }) => {
                   <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                     <MapPin size={18} className="text-red-600" /> Meeting Link
                   </h4>
-                  {isAuthenticated ? (
+                  {isRegistered ? (
                     <a
                       href={event.meetingLink}
                       target="_blank"
@@ -451,10 +506,31 @@ const FeaturedEventCard = ({ event }) => {
                       {event.meetingLink}
                     </a>
                   ) : (
-                    <div className="p-3 bg-gray-100 rounded-lg">
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
-                        <Lock size={16} /> Login to view meeting link
-                      </p>
+                    <div className="space-y-3">
+                      <div className="p-3 bg-gray-100 rounded-lg filter blur-sm">
+                        <p className="text-sm text-gray-600 break-all">
+                          {event.meetingLink || 'Meeting link will be available after registration'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="email"
+                          placeholder="Enter your email to check registration"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(e) => handleEmailCheck(e.target.value)}
+                        />
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={handleRegisterClick}
+                          className="whitespace-nowrap"
+                        >
+                          Register Here
+                        </Button>
+                      </div>
+                      {checkingRegistration && (
+                        <p className="text-sm text-gray-500">Checking registration status...</p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -481,6 +557,94 @@ const FeaturedEventCard = ({ event }) => {
                 </Button>
               </div>
             </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Registration Modal */}
+      {showRegistrationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Register for Event</h2>
+              <button
+                onClick={() => setShowRegistrationModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleRegistrationSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={registrationForm.name}
+                  onChange={(e) => setRegistrationForm(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Age *
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  max="120"
+                  value={registrationForm.age}
+                  onChange={(e) => setRegistrationForm(prev => ({ ...prev, age: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your age"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={registrationForm.email}
+                  onChange={(e) => setRegistrationForm(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your email"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Institute Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={registrationForm.instituteName}
+                  onChange={(e) => setRegistrationForm(prev => ({ ...prev, instituteName: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your institute/school name"
+                />
+              </div>
+
+              <div className="pt-4">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-full"
+                  disabled={registrationLoading}
+                >
+                  {registrationLoading ? 'Registering...' : 'Register for Event'}
+                </Button>
+              </div>
+            </form>
           </Card>
         </div>
       )}

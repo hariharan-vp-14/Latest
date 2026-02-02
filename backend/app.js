@@ -11,6 +11,7 @@ const eventRoutes = require('./routes/event.routes');
 const userRoutes = require('./routes/user.routes');
 const donationRoutes = require('./routes/donation.route');
 const newsletterRoutes = require('./routes/newsletter.route');
+const eventRegistrationRoutes = require('./routes/eventRegistration.routes');
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/event-registrations', eventRegistrationRoutes);
 
 app.get('/', (req, res) => {
     res.status(200).json({ message: 'Backend API is running' });

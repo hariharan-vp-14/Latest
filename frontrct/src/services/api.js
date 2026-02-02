@@ -395,6 +395,18 @@ class APIService {
       body: JSON.stringify({ password, confirmPassword }),
     });
   }
+
+  /* ================= EVENT REGISTRATION ================= */
+  registerForEvent(registrationData) {
+    return this.request('/api/event-registrations/register', {
+      method: 'POST',
+      body: JSON.stringify(registrationData),
+    });
+  }
+
+  checkEventRegistration(email, eventId) {
+    return this.request(`/api/event-registrations/check?email=${encodeURIComponent(email)}&eventId=${eventId}`);
+  }
 }
 
 export default new APIService();

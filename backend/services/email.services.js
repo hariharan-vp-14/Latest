@@ -424,3 +424,83 @@ exports.sendAdminNewEventNotification = async (adminEmail, eventName, hostName, 
     return false;
   }
 };
+
+/* =================================================
+   EVENT REGISTRATION CONFIRMATION EMAIL
+================================================= */
+exports.sendEventRegistrationConfirmation = async (to, name, eventName, eventDate, eventTime, eventDescription) => {
+  const transporter = await createTransporter();
+
+  const subject = `🎉 Registration Confirmed - ${eventName}`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 28px;">TalentConnect Pro</h1>
+        <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Event Registration Confirmation</p>
+      </div>
+      
+      <div style="background: white; padding: 40px 30px; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <h2 style="color: #333; margin-bottom: 20px;">Welcome ${name}!</h2>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="color: #667eea; margin: 0 0 15px 0;">Your registration for "${eventName}" has been confirmed!</h3>
+          
+          <div style="margin: 15px 0;">
+            <strong>Event Details:</strong><br>
+            <span style="color: #666;">Date: ${eventDate ? new Date(eventDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD'}</span><br>
+            <span style="color: #666;">Time: ${eventTime || 'TBD'}</span>
+          </div>
+          
+          <div style="margin: 15px 0;">
+            <strong>Description:</strong><br>
+            <span style="color: #666;">${eventDescription || 'Join us for an exciting event!'}</span>
+          </div>
+        </div>
+        
+        <div style="background: #e8f5e8; border: 1px solid #4caf50; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p style="color: #2e7d32; margin: 0; font-weight: bold;">
+            🎯 Best of luck with your participation! We're excited to see your talents shine.
+          </p>
+        </div>
+        
+        <p style="color: #666; line-height: 1.6;">
+          You will receive the meeting link and any additional updates via email closer to the event date.
+        </p>
+        
+        <p style="color: #666; line-height: 1.6;">
+          If you have any questions, feel free to reach out to our support team.
+        </p>
+        
+        <div style="text-align: center; margin-top: 30px;">
+          <a href="${process.env.FRONTEND_URL || 'https://talentconnectpro.com'}/events" 
+             style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+            View All Events
+          </a>
+        </div>
+      </div>
+      
+      <div style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px;">
+        <p style="margin: 0;">TalentConnect Pro © ${new Date().getFullYear()}</p>
+      </div>
+    </div>
+  `;
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"TalentConnect Pro" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
+      to,
+      subject,
+      html
+    });
+
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      console.log("📧 Registration confirmation email preview URL:", previewUrl);
+    }
+    return true;
+  } catch (err) {
+    console.error("❌ Failed to send registration confirmation email:", err);
+    return false;
+  }
+};

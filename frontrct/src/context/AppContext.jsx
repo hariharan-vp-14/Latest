@@ -56,12 +56,12 @@ export const AppProvider = ({ children }) => {
   // Alias for events to match component usage
   const conferences = events;
 
-  const registerForEvent = useCallback(async (eventId) => {
+  const registerForEvent = useCallback(async (eventId, registrationData = {}) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await apiService.registerForEvent(eventId);
-      addNotification('Successfully registered for event!', 'success');
+      const result = await apiService.registerForEvent(eventId, registrationData);
+      addNotification('Successfully registered for event! Confirmation email sent.', 'success');
       return result;
     } catch (err) {
       setError(err.message);
