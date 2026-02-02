@@ -54,7 +54,13 @@ export const Home = () => {
                   <Button 
                     variant="outline" 
                     className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6"
-                    onClick={() => navigate('/events')}
+                    onClick={() => {
+                      if (userRole === 'admin' || userRole === 'host' || userRole === 'user') {
+                        document.getElementById('featured-events').scrollIntoView({ behavior: 'smooth' });
+                      } else {
+                        navigate('/events');
+                      }
+                    }}
                   >
                     Explore Events
                   </Button>
@@ -82,7 +88,7 @@ export const Home = () => {
         </div>
 
         {/* Featured Events */}
-        <div className="bg-gray-50 py-12 md:py-16">
+        <div id="featured-events" className="bg-gray-50 py-12 md:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-8 md:mb-12">
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 md:mb-4">Featured Events</h2>
