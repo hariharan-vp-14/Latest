@@ -1,7 +1,8 @@
 const Event = require("../models/event.model");
 const Registration = require("../models/registration.model");
 const Host = require("../models/hostmodel"); // Ensure Host model is loaded
-const { sendAdminNewEventNotification, sendEventDecisionNotification } = require("./email.services");
+const User = require("../models/user.model");
+const { sendAdminNewEventNotification, sendEventDecisionNotification, sendEventRegistrationConfirmation } = require("./email.services");
 
 /* =================================================
    CREATE EVENT (HOST)
@@ -246,6 +247,27 @@ module.exports.registerForEvent = async (eventId, userId) => {
   // Update registered count
   event.registeredCount += 1;
   await event.save();
+
+  // Send registration confirmation email to user
+  try {
+    const user = await User.findById(userId).select('fullname email');
+    if (user && user.email) {
+      const userName = user.fullname ? `${user.fullname.firstname} ${user.fullname.lastname}` : 'User';
+
+      await sendEventRegistrationConfirmation(
+        user.email,
+        userName,
+        event.eventName,
+        event.eventDate,
+        event.eventTime,
+        event.description
+      );
+      console.log('✅ Event registration confirmation email sent to:', user.email);
+    }
+  } catch (emailError) {
+    console.error('❌ Failed to send registration confirmation email:', emailError.message);
+    // Don't fail the registration if email fails
+  }
 
   return { message: "Successfully registered for event" };
 };

@@ -55,11 +55,7 @@ export const Home = () => {
                     variant="outline" 
                     className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6"
                     onClick={() => {
-                      if (userRole === 'admin' || userRole === 'host' || userRole === 'user') {
-                        document.getElementById('featured-events').scrollIntoView({ behavior: 'smooth' });
-                      } else {
-                        navigate('/events');
-                      }
+                      document.getElementById('featured-events').scrollIntoView({ behavior: 'smooth' });
                     }}
                   >
                     Explore Events

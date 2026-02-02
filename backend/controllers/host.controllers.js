@@ -177,7 +177,7 @@ module.exports.forgotPassword = async (req, res) => {
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    await sendPasswordResetMail(email, resetLink);
+    await sendPasswordResetMail(email, resetLink, "Host");
 
     res.status(200).json({
       success: true,
