@@ -7,7 +7,7 @@ const {
   getNewsletterStats,
   getAllSubscribers,
 } = require('../controllers/newsletter.controller');
-const authMiddleware = require('../middleware/auth.middleware');
+const { authMiddleware } = require('../middleware/auth.middleware');
 const roleMiddleware = require('../middleware/role.middleware');
 
 const adminMiddleware = roleMiddleware('admin');
