@@ -4,28 +4,28 @@ import { UserPlus, Calendar, Video, Trophy } from "lucide-react";
 
 const steps = [
   {
-    icon: <UserPlus size={32} className="text-white" />, // Sign Up
+    icon: <UserPlus size={24} className="text-blue-600" />,
     badge: "1",
     title: "Sign Up",
     description:
       "Create your free account as a participant or host. Specify your disability type for personalized accessibility features.",
   },
   {
-    icon: <Calendar size={32} className="text-white" />, // Explore Events
+    icon: <Calendar size={24} className="text-blue-600" />,
     badge: "2",
     title: "Explore Events",
     description:
       "Browse through our curated virtual conferences. Filter by accessibility features, topics, and dates.",
   },
   {
-    icon: <Video size={32} className="text-white" />, // Join & Participate
+    icon: <Video size={24} className="text-blue-600" />,
     badge: "3",
     title: "Join & Participate",
     description:
       "Register for conferences and join with our accessible platform. Network with peers and industry professionals.",
   },
   {
-    icon: <Trophy size={32} className="text-white" />, // Showcase Your Talent
+    icon: <Trophy size={24} className="text-blue-600" />,
     badge: "4",
     title: "Showcase Your Talent",
     description:
@@ -35,41 +35,21 @@ const steps = [
 
 export function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="bg-white flex flex-col items-center py-8 px-4 sm:px-6">
-      <h2 className="text-2xl font-bold mb-8 text-center text-blue-700">How It Works</h2>
-      <div className="w-full max-w-4xl flex flex-col md:flex-row md:justify-between relative">
-        {/* Vertical line for desktop */}
-        <div className="hidden md:block absolute left-1/2 top-0 h-full w-0.5 bg-gray-200 z-0" style={{transform: 'translateX(-50%)'}} />
-        <div className="flex flex-col gap-12 w-full md:w-1/2 z-10">
-          {steps.map((step, idx) => (
-            <div key={idx} className="flex items-start md:justify-start gap-4 relative">
-              {/* Icon with badge */}
-              <div className="relative flex-shrink-0">
-                <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center shadow-lg">
-                  {step.icon}
-                </div>
-                <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border border-white shadow">{step.badge}</span>
+    <section id="how-it-works" className="bg-white flex flex-col items-center py-16 px-4 sm:px-6">
+      <h2 className="text-2xl font-bold mb-10 text-center text-gray-900">How It Works</h2>
+      <div className="w-full max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-6">
+        {steps.map((step, idx) => (
+          <div key={idx} className="bg-white rounded-xl border border-gray-200 p-6 shadow-card hover:shadow-card-hover transition-shadow">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                {step.icon}
               </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-1 text-gray-900">{step.title}</h3>
-                <p className="text-gray-600 text-sm max-w-xs">{step.description}</p>
-              </div>
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Step {step.badge}</span>
             </div>
-          ))}
-        </div>
-        {/* For desktop, mirror the icons on the right */}
-        <div className="hidden md:flex flex-col gap-12 w-1/2 items-end z-10">
-          {steps.map((step, idx) => (
-            <div key={idx} className="flex items-start justify-end gap-4 relative">
-              <div className="relative flex-shrink-0">
-                <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center shadow-lg">
-                  {step.icon}
-                </div>
-                <span className="absolute -top-2 -left-2 bg-pink-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border border-white shadow">{step.badge}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+            <h3 className="text-base font-semibold text-gray-900 mb-1">{step.title}</h3>
+            <p className="text-gray-500 text-sm leading-relaxed">{step.description}</p>
+          </div>
+        ))}
       </div>
     </section>
   );

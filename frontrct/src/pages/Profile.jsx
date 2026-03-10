@@ -33,17 +33,17 @@ export const Profile = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Profile Header */}
-        <Card className="mb-8 bg-white shadow-lg">
+        <Card className="mb-8 bg-white shadow-card border border-gray-200">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
+              <div className="w-16 h-16 bg-gray-900 rounded-xl flex items-center justify-center text-white text-2xl font-bold">
                 {firstName.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-gray-900">
                   {firstName} {lastName}
                 </h1>
-                <p className="text-gray-600 capitalize text-lg font-medium">
+                <p className="text-gray-500 capitalize text-sm font-medium">
                   {userRole === 'user' ? 'Participant' : userRole === 'admin' ? 'Administrator' : 'Event Host'}
                 </p>
               </div>
@@ -51,46 +51,52 @@ export const Profile = () => {
             <div className="flex gap-3 mt-4 md:mt-0">
               <Button
                 onClick={() => setIsEditing(!isEditing)}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm text-sm"
               >
-                {isEditing ? <X size={18} /> : <Edit2 size={18} />}
+                {isEditing ? <X size={16} /> : <Edit2 size={16} />}
                 {isEditing ? 'Cancel' : 'Edit Profile'}
               </Button>
               <Button
                 onClick={handleLogout}
-                className="flex items-center gap-2 bg-red-600 hover:bg-red-700"
+                className="flex items-center gap-2 bg-white text-red-600 border border-red-200 hover:bg-red-50 shadow-sm text-sm"
               >
-                <LogOut size={18} />
+                <LogOut size={16} />
                 Logout
               </Button>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-5">
             {/* Email - Always shown */}
             <div className="flex items-center gap-3">
-              <Mail size={20} className="text-blue-600" />
+              <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                <Mail size={16} className="text-blue-600" />
+              </div>
               <div>
-                <p className="text-sm text-gray-500 font-medium">Email</p>
-                <p className="font-semibold text-gray-900">{user.email}</p>
+                <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Email</p>
+                <p className="text-sm font-medium text-gray-900">{user.email}</p>
               </div>
             </div>
 
             {/* Full Name - Always shown */}
             <div className="flex items-center gap-3">
-              <User size={20} className="text-blue-600" />
+              <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                <User size={16} className="text-blue-600" />
+              </div>
               <div>
-                <p className="text-sm text-gray-500 font-medium">Full Name</p>
-                <p className="font-semibold text-gray-900">{firstName} {lastName}</p>
+                <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Full Name</p>
+                <p className="text-sm font-medium text-gray-900">{firstName} {lastName}</p>
               </div>
             </div>
 
             {/* Account Type - Always shown */}
             <div className="flex items-center gap-3">
-              <User size={20} className="text-blue-600" />
+              <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                <User size={16} className="text-blue-600" />
+              </div>
               <div>
-                <p className="text-sm text-gray-500 font-medium">Account Type</p>
-                <p className="font-semibold text-gray-900 capitalize">
+                <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Account Type</p>
+                <p className="text-sm font-medium text-gray-900 capitalize">
                   {userRole === 'user' ? 'Participant' : userRole === 'admin' ? 'Administrator' : 'Event Host'}
                 </p>
               </div>
@@ -99,10 +105,12 @@ export const Profile = () => {
             {/* Age - Optional */}
             {user.age && (
               <div className="flex items-center gap-3">
-                <Calendar size={20} className="text-blue-600" />
+                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <Calendar size={16} className="text-blue-600" />
+                </div>
                 <div>
-                  <p className="text-sm text-gray-500 font-medium">Age</p>
-                  <p className="font-semibold text-gray-900">{user.age}</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Age</p>
+                  <p className="text-sm font-medium text-gray-900">{user.age}</p>
                 </div>
               </div>
             )}
@@ -110,10 +118,12 @@ export const Profile = () => {
             {/* Institution - Optional */}
             {user.institution && (
               <div className="flex items-center gap-3">
-                <MapPin size={20} className="text-blue-600" />
+                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <MapPin size={16} className="text-blue-600" />
+                </div>
                 <div>
-                  <p className="text-sm text-gray-500 font-medium">Institution</p>
-                  <p className="font-semibold text-gray-900">{user.institution}</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Institution</p>
+                  <p className="text-sm font-medium text-gray-900">{user.institution}</p>
                 </div>
               </div>
             )}
@@ -121,10 +131,12 @@ export const Profile = () => {
             {/* Contact/Phone - Optional */}
             {user.contact && (
               <div className="flex items-center gap-3">
-                <Phone size={20} className="text-blue-600" />
+                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <Phone size={16} className="text-blue-600" />
+                </div>
                 <div>
-                  <p className="text-sm text-gray-500 font-medium">Contact Number</p>
-                  <p className="font-semibold text-gray-900">{user.contact}</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Contact Number</p>
+                  <p className="text-sm font-medium text-gray-900">{user.contact}</p>
                 </div>
               </div>
             )}
@@ -132,10 +144,12 @@ export const Profile = () => {
             {/* Education Level - Optional */}
             {user.educationLevel && (
               <div className="flex items-center gap-3">
-                <Calendar size={20} className="text-blue-600" />
+                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <Calendar size={16} className="text-blue-600" />
+                </div>
                 <div>
-                  <p className="text-sm text-gray-500 font-medium">Education Level</p>
-                  <p className="font-semibold text-gray-900">{user.educationLevel}</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Education Level</p>
+                  <p className="text-sm font-medium text-gray-900">{user.educationLevel}</p>
                 </div>
               </div>
             )}
@@ -143,10 +157,12 @@ export const Profile = () => {
             {/* Designation - Optional */}
             {user.designation && (
               <div className="flex items-center gap-3">
-                <User size={20} className="text-blue-600" />
+                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <User size={16} className="text-blue-600" />
+                </div>
                 <div>
-                  <p className="text-sm text-gray-500 font-medium">Designation</p>
-                  <p className="font-semibold text-gray-900">{user.designation}</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Designation</p>
+                  <p className="text-sm font-medium text-gray-900">{user.designation}</p>
                 </div>
               </div>
             )}
@@ -154,10 +170,12 @@ export const Profile = () => {
             {/* Company Name - Optional */}
             {user.companyName && (
               <div className="flex items-center gap-3">
-                <MapPin size={20} className="text-blue-600" />
+                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <MapPin size={16} className="text-blue-600" />
+                </div>
                 <div>
-                  <p className="text-sm text-gray-500 font-medium">Company</p>
-                  <p className="font-semibold text-gray-900">{user.companyName}</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Company</p>
+                  <p className="text-sm font-medium text-gray-900">{user.companyName}</p>
                 </div>
               </div>
             )}
@@ -165,10 +183,12 @@ export const Profile = () => {
             {/* Bio - Optional */}
             {user.bio && (
               <div className="col-span-2 flex items-start gap-3">
-                <User size={20} className="text-blue-600 mt-1" />
+                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center mt-0.5">
+                  <User size={16} className="text-blue-600" />
+                </div>
                 <div className="flex-1">
-                  <p className="text-sm text-gray-500 font-medium">Bio</p>
-                  <p className="font-semibold text-gray-900">{user.bio}</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Bio</p>
+                  <p className="text-sm font-medium text-gray-900">{user.bio}</p>
                 </div>
               </div>
             )}

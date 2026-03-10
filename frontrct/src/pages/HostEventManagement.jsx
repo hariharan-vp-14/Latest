@@ -80,21 +80,21 @@ export const HostEventManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Event Management</h1>
-              <p className="text-gray-600 mt-1">Create and manage your hosted events</p>
+              <h1 className="text-2xl font-bold text-gray-900">Event Management</h1>
+              <p className="text-gray-500 text-sm mt-1">Create and manage your hosted events</p>
             </div>
             <Button
               onClick={() => setShowCreateModal(true)}
               variant="primary"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm text-sm"
             >
-              <Plus size={20} /> Create Event
+              <Plus size={16} /> Create Event
             </Button>
           </div>
         </div>
@@ -218,7 +218,7 @@ const HostEventCard = ({ event, onRefresh, getStatusBadge, onView, onEdit }) => 
   };
 
   return (
-    <Card className="hover:shadow-lg transition">
+    <Card className="hover:shadow-card-hover transition border border-gray-200">
       <div className="flex justify-between items-start mb-4">
         <h3 className="text-xl font-bold text-gray-900 flex-1">{event.eventName}</h3>
         {getStatusBadge(event.approvalStatus)}
@@ -318,10 +318,10 @@ const CreateEventModal = ({ onClose, onSuccess }) => {
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Create New Event</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Create New Event</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
@@ -457,10 +457,10 @@ const ViewEventModal = ({ event, onClose, onEdit, onRefresh }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Event Details</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Event Details</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
@@ -615,10 +615,10 @@ const EditEventModal = ({ event, onClose, onSuccess }) => {
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Edit Event</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Edit Event</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-2xl leading-none"

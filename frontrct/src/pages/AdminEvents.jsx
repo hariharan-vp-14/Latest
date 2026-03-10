@@ -80,8 +80,8 @@ export const AdminEvents = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Event Approval Dashboard</h1>
-          <p className="text-gray-600">Review and approve events submitted by hosts</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Event Approval Dashboard</h1>
+          <p className="text-gray-500 text-sm">Review and approve events submitted by hosts</p>
         </div>
 
         {error && <Alert type="error" message={error} className="mb-6" />}
@@ -90,9 +90,9 @@ export const AdminEvents = () => {
           <Loading />
         ) : pendingEvents.length === 0 ? (
           <Card className="text-center py-12">
-            <CheckCircle size={48} className="mx-auto text-green-500 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">All Caught Up!</h3>
-            <p className="text-gray-600">No pending events to review at the moment.</p>
+            <CheckCircle size={40} className="mx-auto text-emerald-500 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">All Caught Up!</h3>
+            <p className="text-gray-500 text-sm">No pending events to review at the moment.</p>
           </Card>
         ) : (
           <div className="grid gap-6">

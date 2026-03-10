@@ -48,15 +48,17 @@ export const ResetPassword = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-white shadow-lg">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-white shadow-card border border-gray-200">
           <div className="text-center">
-            <Lock className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Password Reset Successful</h1>
-            <p className="text-gray-600 mb-6">Your password has been reset. You can now login with your new password.</p>
+            <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-7 h-7 text-emerald-600" />
+            </div>
+            <h1 className="text-xl font-semibold text-gray-900 mb-2">Password Reset Successful</h1>
+            <p className="text-gray-500 text-sm mb-6">Your password has been reset. You can now login with your new password.</p>
             <Button
               onClick={() => navigate('/login')}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
             >
               Go to Login
             </Button>
@@ -67,11 +69,11 @@ export const ResetPassword = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white shadow-lg">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white shadow-card border border-gray-200">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Reset Password</h1>
-          <p className="text-gray-600">Enter your new password</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Reset Password</h1>
+          <p className="text-gray-500 text-sm">Enter your new password</p>
         </div>
 
         {error && <Alert type="error" message={error} className="mb-4" />}

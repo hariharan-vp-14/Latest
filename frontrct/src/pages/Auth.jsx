@@ -86,14 +86,14 @@ export const Login = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white shadow-2xl rounded-2xl border border-gray-100">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white shadow-card rounded-xl border border-gray-200">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-block bg-gradient-to-br from-blue-600 to-blue-700 rounded-full p-3 mb-4">
-            <LogIn size={24} className="text-white" />
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-50 rounded-xl mb-4">
+            <LogIn size={22} className="text-blue-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome Back</h1>
           <p className="text-gray-500 text-sm">Sign in to your TalentConnect account</p>
         </div>
 
@@ -103,9 +103,9 @@ export const Login = () => {
         )}
 
         {/* Role Selection */}
-        <div className="mb-8 bg-gray-50 p-4 rounded-xl">
-          <p className="text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide">Login as</p>
-          <div className="grid grid-cols-3 gap-3">
+        <div className="mb-6">
+          <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">Login as</p>
+          <div className="grid grid-cols-3 gap-2">
             {['user', 'admin', 'host'].map((role) => (
               <button
                 key={role}
@@ -113,22 +113,22 @@ export const Login = () => {
                   setUserRole(role);
                   setLoginError('');
                 }}
-                className={`py-3 px-3 rounded-lg font-medium transition text-sm ${userRole === role
-                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                className={`py-2.5 px-3 rounded-lg font-medium transition text-sm ${userRole === role
+                  ? 'bg-gray-900 text-white shadow-sm'
+                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
               >
                 {role === 'user' ? (
-                  <span className="flex items-center justify-center gap-1">
-                    <User size={16} /> User
+                  <span className="flex items-center justify-center gap-1.5">
+                    <User size={14} /> User
                   </span>
                 ) : role === 'admin' ? (
-                  <span className="flex items-center justify-center gap-1">
-                    <Settings size={16} /> Admin
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Settings size={14} /> Admin
                   </span>
                 ) : (
-                  <span className="flex items-center justify-center gap-1">
-                    <Building size={16} /> Host
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Building size={14} /> Host
                   </span>
                 )}
               </button>
@@ -199,7 +199,7 @@ export const Login = () => {
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
             loading={loading}
           >
             Sign In
@@ -209,14 +209,14 @@ export const Login = () => {
         <div className="mt-4 text-center">
           <button
             onClick={() => setShowForgotPassword(true)}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+            className="text-blue-600 hover:text-blue-700 text-sm font-medium transition"
           >
             Forgot Password?
           </button>
         </div>
 
-        <div className="mt-6 text-center border-t pt-4">
-          <p className="text-gray-600 text-sm">
+        <div className="mt-6 text-center border-t border-gray-100 pt-4">
+          <p className="text-gray-500 text-sm">
             Don't have an account?{' '}
             <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
               Sign Up
@@ -227,19 +227,18 @@ export const Login = () => {
 
       {/* Admin Success Modal */}
       {showSuccessModal && successRole === 'admin' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white shadow-2xl">
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Smile size={32} className="text-blue-600" />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white shadow-lg border border-gray-200">
+            <div className="text-center py-6">
+              <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Smile size={28} className="text-blue-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back, Administrator!</h2>
-              <p className="text-gray-600 mb-6">Ready to manage events?</p>
-              <p className="text-sm text-gray-500 mb-8">Accessing your admin dashboard...</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Welcome Back, Administrator!</h2>
+              <p className="text-gray-500 text-sm mb-6">Accessing your admin dashboard...</p>
               <Button
                 onClick={handleModalClose}
                 variant="primary"
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
               >
                 Go to Admin Dashboard
               </Button>
@@ -250,26 +249,23 @@ export const Login = () => {
 
       {/* Signup Prompt Modal */}
       {showSignupPrompt && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white shadow-2xl">
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Zap size={32} className="text-purple-600" />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white shadow-lg border border-gray-200">
+            <div className="text-center py-6">
+              <div className="w-14 h-14 bg-amber-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Zap size={28} className="text-amber-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">No Account Found</h2>
-              <p className="text-gray-600 mb-2">
-                We couldn't find an account with this email.
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">No Account Found</h2>
+              <p className="text-gray-500 text-sm mb-6">
+                We couldn't find an account with this email. Create a new {userRole} account?
               </p>
-              <p className="text-gray-500 text-sm mb-8">
-                Would you like to create a new {userRole} account?
-              </p>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <Button
                   onClick={handleSignupRedirect}
                   variant="primary"
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
                 >
-                  <Zap size={16} className="inline mr-2" /> Sign Up Now
+                  Sign Up Now
                 </Button>
                 <Button
                   onClick={() => setShowSignupPrompt(false)}
@@ -337,33 +333,31 @@ const RegistrationTypeSelector = ({ onSelect }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Join TalentConnect</h1>
-          <p className="text-gray-600 text-lg">Choose your registration type</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">Join TalentConnect</h1>
+          <p className="text-gray-500">Choose your registration type</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
           {registrationTypes.map(({ type, title, description, icon: Icon, color }) => (
-            <Card
+            <div
               key={type}
-              className="bg-white cursor-pointer hover:shadow-xl transition transform hover:scale-105"
+              className="bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-card-hover hover:border-gray-300 transition-all duration-200 text-center"
               onClick={() => onSelect(type)}
             >
-              <div className="flex flex-col items-center text-center h-full">
-                <div className={`w-16 h-16 bg-${color}-100 rounded-lg flex items-center justify-center mb-4`}>
-                  <Icon className={`text-${color}-600`} size={32} />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
-                <p className="text-gray-600 text-sm">{description}</p>
+              <div className={`w-12 h-12 bg-${color}-50 rounded-xl flex items-center justify-center mx-auto mb-4`}>
+                <Icon className={`text-${color}-600`} size={24} />
               </div>
-            </Card>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">{title}</h3>
+              <p className="text-gray-500 text-sm">{description}</p>
+            </div>
           ))}
         </div>
 
         <div className="text-center">
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-500 text-sm">
             Already have an account?{' '}
             <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
               Sign In
@@ -442,18 +436,18 @@ const UserSignup = ({ onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl bg-white shadow-lg">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl bg-white shadow-card border border-gray-200">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+          className="flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-6 text-sm font-medium transition"
         >
-          <ArrowLeft size={20} /> Back
+          <ArrowLeft size={16} /> Back
         </button>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">User Registration</h1>
-          <p className="text-gray-600">Create your account to get started</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">User Registration</h1>
+          <p className="text-gray-500 text-sm">Create your account to get started</p>
         </div>
 
         {error && <Alert type="error" message={error} className="mb-4" />}
@@ -518,7 +512,7 @@ const UserSignup = ({ onBack }) => {
                 name="educationLevel"
                 value={values.educationLevel}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition"
                 required
               >
                 <option value="">Select Education Level</option>
@@ -551,7 +545,7 @@ const UserSignup = ({ onBack }) => {
               name="disabilityType"
               value={values.disabilityType}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition"
             >
               <option value="None">None</option>
               <option value="Physical">Physical</option>
@@ -623,8 +617,8 @@ const UserSignup = ({ onBack }) => {
           </Button>
         </form>
 
-        <div className="mt-6 text-center border-t pt-4">
-          <p className="text-gray-600 text-sm">
+        <div className="mt-6 text-center border-t border-gray-100 pt-4">
+          <p className="text-gray-500 text-sm">
             Already have an account?{' '}
             <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
               Sign In
@@ -635,25 +629,22 @@ const UserSignup = ({ onBack }) => {
 
       {/* Success Modal - Auto-login complete */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white shadow-2xl">
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <CheckCircle size={32} className="text-green-600" />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white shadow-lg border border-gray-200">
+            <div className="text-center py-6">
+              <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={28} className="text-emerald-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to TalentConnect!</h2>
-              <p className="text-gray-600 mb-2">
-                Your account has been created successfully.
-              </p>
-              <p className="text-gray-500 text-sm mb-8">
-                You're now logged in. Let's explore some amazing events!
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Welcome to TalentConnect!</h2>
+              <p className="text-gray-500 text-sm mb-6">
+                Your account has been created. Let's explore some events!
               </p>
               <Button
                 onClick={handleSuccessClose}
                 variant="primary"
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
               >
-                <Zap size={16} className="inline mr-2" /> Explore Events
+                Explore Events
               </Button>
             </div>
           </Card>
@@ -662,26 +653,23 @@ const UserSignup = ({ onBack }) => {
 
       {/* Existing Account Modal */}
       {showExistingAccountModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white shadow-2xl">
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Shield size={32} className="text-amber-600" />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white shadow-lg border border-gray-200">
+            <div className="text-center py-6">
+              <div className="w-14 h-14 bg-amber-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Shield size={28} className="text-amber-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Already Exists</h2>
-              <p className="text-gray-600 mb-2">
-                This email is already registered.
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Account Already Exists</h2>
+              <p className="text-gray-500 text-sm mb-6">
+                This email is already registered. Sign in or use a different email.
               </p>
-              <p className="text-gray-500 text-sm mb-8">
-                Please login with your existing account or use a different email.
-              </p>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <Button
                   onClick={() => navigate('/login')}
                   variant="primary"
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
                 >
-                  <LogIn size={16} className="inline mr-2" /> Sign In
+                  Sign In
                 </Button>
                 <Button
                   onClick={() => setShowExistingAccountModal(false)}
@@ -769,31 +757,31 @@ const AdminRegister = ({ onBack, onSwitchTab }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white shadow-lg">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white shadow-card border border-gray-200">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+          className="flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-6 text-sm font-medium transition"
         >
-          <ArrowLeft size={20} /> Back
+          <ArrowLeft size={16} /> Back
         </button>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Administrator Access</h1>
-          <p className="text-gray-600">Manage and approve events</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Administrator Access</h1>
+          <p className="text-gray-500 text-sm">Manage and approve events</p>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-4 mb-8 bg-gray-100 p-1 rounded-lg">
           <button
-            className="flex-1 py-2 px-4 rounded-md font-medium transition text-sm bg-white text-purple-600 shadow-sm"
+            className="flex-1 py-2 px-4 rounded-md font-medium transition text-sm bg-white text-gray-900 shadow-sm"
             disabled
           >
             Register
           </button>
           <button
             onClick={onSwitchTab}
-            className="flex-1 py-2 px-4 rounded-md font-medium transition text-sm text-gray-600 hover:text-gray-900"
+            className="flex-1 py-2 px-4 rounded-md font-medium transition text-sm text-gray-500 hover:text-gray-900"
           >
             Login
           </button>
@@ -890,7 +878,7 @@ const AdminRegister = ({ onBack, onSwitchTab }) => {
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
             loading={loading}
           >
             Create Admin Account
@@ -900,19 +888,18 @@ const AdminRegister = ({ onBack, onSwitchTab }) => {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white shadow-2xl">
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <CheckCircle size={32} className="text-green-600" />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white shadow-lg border border-gray-200">
+            <div className="text-center py-6">
+              <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={28} className="text-emerald-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Successfully Registered!</h2>
-              <p className="text-gray-600 mb-6">Welcome to TalentConnect Pro, Administrator!</p>
-              <p className="text-sm text-gray-500 mb-8">You are now logged in and ready to manage events.</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Successfully Registered!</h2>
+              <p className="text-gray-500 text-sm mb-6">Welcome to TalentConnect Pro, Administrator! You're now logged in.</p>
               <Button
                 onClick={handleModalClose}
                 variant="primary"
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
               >
                 Go to Home
               </Button>
@@ -955,30 +942,30 @@ const AdminLogin = ({ onBack, onSwitchTab }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white shadow-lg">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white shadow-card border border-gray-200">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+          className="flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-6 text-sm font-medium transition"
         >
-          <ArrowLeft size={20} /> Back
+          <ArrowLeft size={16} /> Back
         </button>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Administrator Access</h1>
-          <p className="text-gray-600">Manage and approve events</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Administrator Access</h1>
+          <p className="text-gray-500 text-sm">Manage and approve events</p>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-4 mb-8 bg-gray-100 p-1 rounded-lg">
           <button
             onClick={onSwitchTab}
-            className="flex-1 py-2 px-4 rounded-md font-medium transition text-sm text-gray-600 hover:text-gray-900"
+            className="flex-1 py-2 px-4 rounded-md font-medium transition text-sm text-gray-500 hover:text-gray-900"
           >
             Register
           </button>
           <button
-            className="flex-1 py-2 px-4 rounded-md font-medium transition text-sm bg-white text-purple-600 shadow-sm"
+            className="flex-1 py-2 px-4 rounded-md font-medium transition text-sm bg-white text-gray-900 shadow-sm"
             disabled
           >
             Login
@@ -1029,7 +1016,7 @@ const AdminLogin = ({ onBack, onSwitchTab }) => {
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
             loading={loading}
           >
             Login
@@ -1039,19 +1026,18 @@ const AdminLogin = ({ onBack, onSwitchTab }) => {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white shadow-2xl">
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Smile size={32} className="text-blue-600" />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white shadow-lg border border-gray-200">
+            <div className="text-center py-6">
+              <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Smile size={28} className="text-blue-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back, Administrator!</h2>
-              <p className="text-gray-600 mb-6">Ready to manage events?</p>
-              <p className="text-sm text-gray-500 mb-8">You are now logged in.</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Welcome Back, Administrator!</h2>
+              <p className="text-gray-500 text-sm mb-6">You're logged in and ready to manage events.</p>
               <Button
                 onClick={handleModalClose}
                 variant="primary"
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
               >
                 Go to Home
               </Button>
@@ -1131,18 +1117,18 @@ const HostSignup = ({ onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl bg-white shadow-lg">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl bg-white shadow-card border border-gray-200">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+          className="flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-6 text-sm font-medium transition"
         >
-          <ArrowLeft size={20} /> Back
+          <ArrowLeft size={16} /> Back
         </button>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Host Registration</h1>
-          <p className="text-gray-600">Create your host account to organize events</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Host Registration</h1>
+          <p className="text-gray-500 text-sm">Create your host account to organize events</p>
         </div>
 
         {error && <Alert type="error" message={error} className="mb-4" />}
@@ -1289,15 +1275,15 @@ const HostSignup = ({ onBack }) => {
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full bg-green-600 hover:bg-green-700"
+            className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
             loading={loading}
           >
             Create Host Account
           </Button>
         </form>
 
-        <div className="mt-6 text-center border-t pt-4">
-          <p className="text-gray-600 text-sm">
+        <div className="mt-6 text-center border-t border-gray-100 pt-4">
+          <p className="text-gray-500 text-sm">
             Already have an account?{' '}
             <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
               Sign In
@@ -1308,19 +1294,18 @@ const HostSignup = ({ onBack }) => {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white shadow-2xl">
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <CheckCircle size={32} className="text-green-600" />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white shadow-lg border border-gray-200">
+            <div className="text-center py-6">
+              <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={28} className="text-emerald-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Successfully Registered!</h2>
-              <p className="text-gray-600 mb-6">Welcome to TalentConnect Pro, Host!</p>
-              <p className="text-sm text-gray-500 mb-8">You can now create and manage events.</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Successfully Registered!</h2>
+              <p className="text-gray-500 text-sm mb-6">Welcome to TalentConnect Pro, Host! You can now create events.</p>
               <Button
                 onClick={handleModalClose}
                 variant="primary"
-                className="w-full bg-green-600 hover:bg-green-700"
+                className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
               >
                 Start Creating Events
               </Button>
@@ -1331,26 +1316,23 @@ const HostSignup = ({ onBack }) => {
 
       {/* Existing Account Modal */}
       {showExistingAccountModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white shadow-2xl">
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Shield size={32} className="text-amber-600" />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white shadow-lg border border-gray-200">
+            <div className="text-center py-6">
+              <div className="w-14 h-14 bg-amber-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Shield size={28} className="text-amber-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Already Exists</h2>
-              <p className="text-gray-600 mb-2">
-                This email is already registered.
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Account Already Exists</h2>
+              <p className="text-gray-500 text-sm mb-6">
+                This email is already registered. Sign in or use a different email.
               </p>
-              <p className="text-gray-500 text-sm mb-8">
-                Please login with your existing account or use a different email.
-              </p>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <Button
                   onClick={() => navigate('/login')}
                   variant="primary"
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
                 >
-                  <LogIn size={16} className="inline mr-2" /> Sign In
+                  Sign In
                 </Button>
                 <Button
                   onClick={() => setShowExistingAccountModal(false)}
@@ -1393,19 +1375,19 @@ const ForgotPassword = ({ role, onBack }) => {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-white shadow-lg">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-white shadow-card border border-gray-200">
           <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="text-green-600" size={32} />
+            <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="text-emerald-600" size={28} />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Check Your Email</h1>
-            <p className="text-gray-600 mb-6">
-              We've sent password reset instructions to <strong>{email}</strong>
+            <h1 className="text-xl font-semibold text-gray-900 mb-2">Check Your Email</h1>
+            <p className="text-gray-500 text-sm mb-6">
+              We've sent password reset instructions to <strong className="text-gray-700">{email}</strong>
             </p>
             <Button
               onClick={() => window.location.href = '/login'}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
             >
               Back to Login
             </Button>
@@ -1416,18 +1398,18 @@ const ForgotPassword = ({ role, onBack }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white shadow-lg">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white shadow-card border border-gray-200">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+          className="flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-6 text-sm font-medium transition"
         >
-          <ArrowLeft size={20} /> Back
+          <ArrowLeft size={16} /> Back
         </button>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Forgot Password?</h1>
-          <p className="text-gray-600">Enter your email to reset your password</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Forgot Password?</h1>
+          <p className="text-gray-500 text-sm">Enter your email to reset your password</p>
         </div>
 
         {error && <Alert type="error" message={error} className="mb-4" />}

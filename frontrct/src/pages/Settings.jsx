@@ -20,27 +20,27 @@ export const Settings = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-600 mt-2">Manage your account and preferences</p>
+          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+          <p className="text-gray-500 text-sm mt-1">Manage your account and preferences</p>
         </div>
 
         <div className="grid md:grid-cols-4 gap-6">
           {/* Sidebar */}
           <div className="md:col-span-1">
-            <div className="bg-white rounded-lg shadow-custom p-4">
+            <div className="bg-white rounded-xl shadow-card border border-gray-200 p-3">
               {sections.map((section) => {
                 const IconComponent = section.icon;
                 return (
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition flex items-center gap-2 ${
+                  className={`w-full text-left px-3 py-2.5 rounded-lg mb-1 transition flex items-center gap-2 text-sm ${
                     activeSection === section.id
-                      ? 'bg-primary-50 text-primary-600 font-medium'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-gray-100 text-gray-900 font-medium'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
-                  <IconComponent size={20} />
+                  <IconComponent size={16} />
                   {section.label}
                 </button>
               );
@@ -91,7 +91,7 @@ const GeneralSettings = ({ theme, toggleTheme }) => {
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="w-full md:w-64 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full md:w-64 px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition"
           >
             <option value="en">English</option>
             <option value="es">Español</option>
@@ -242,9 +242,9 @@ const DangerZone = ({ logout, user }) => {
   };
 
   return (
-    <Card className="border-danger border-2">
-      <h2 className="text-2xl font-bold text-danger mb-4">Danger Zone</h2>
-      <p className="text-gray-600 mb-6">Be careful with these actions. They cannot be undone.</p>
+    <Card className="border-red-200 border">
+      <h2 className="text-xl font-semibold text-red-600 mb-3">Danger Zone</h2>
+      <p className="text-gray-500 text-sm mb-6">Be careful with these actions. They cannot be undone.</p>
 
       <div className="space-y-4">
         {/* Change Password */}
@@ -273,10 +273,10 @@ const DangerZone = ({ logout, user }) => {
         </div>
 
         {/* Delete Account */}
-        <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border-2 border-danger">
+        <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
           <div>
-            <h3 className="font-semibold text-danger">Delete Account</h3>
-            <p className="text-sm text-gray-600 mt-1">Permanently delete your account and all associated data</p>
+            <h3 className="font-semibold text-red-600">Delete Account</h3>
+            <p className="text-sm text-gray-500 mt-1">Permanently delete your account and all associated data</p>
           </div>
           <Button variant="danger" size="sm" onClick={handleDeleteAccount}>
             Delete

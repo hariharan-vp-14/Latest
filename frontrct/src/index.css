@@ -2,50 +2,158 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =====================================================
+   DESIGN SYSTEM – TalentConnect Pro
+   Modern SaaS aesthetic inspired by Stripe/Vercel/Notion
+   ===================================================== */
+
+/* ---------- Design Tokens ---------- */
 :root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'Poppins', var(--font-body);
+
+  --color-body: #1e293b;
+  --color-heading: #0f172a;
+  --color-muted: #64748b;
+  --color-subtle: #94a3b8;
+  --surface: #ffffff;
+  --surface-secondary: #f8fafc;
+  --border: #e2e8f0;
+
+  font-family: var(--font-body);
+  line-height: 1.6;
   font-weight: 400;
   color-scheme: light;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #333333;
-  background-color: #f5f5f5;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  color: var(--color-body);
+  background-color: var(--surface);
+  scroll-behavior: smooth;
 }
 
-a {
-  font-weight: 500;
-  color: #2563eb;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #1d4ed8;
+/* ---------- Base Layer ---------- */
+@layer base {
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--surface);
+  }
+
+  /* Typography Scale */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    color: var(--color-heading);
+  }
+
+  h1 { font-size: clamp(2.25rem, 5vw, 3.5rem); }
+  h2 { font-size: clamp(1.75rem, 4vw, 2.5rem); }
+  h3 { font-size: clamp(1.25rem, 3vw, 1.5rem); }
+  h4 { font-size: 1.125rem; }
+
+  p {
+    line-height: 1.75;
+    color: var(--color-muted);
+  }
+
+  a {
+    font-weight: 500;
+    color: #2563eb;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  a:hover {
+    color: #1d4ed8;
+  }
+
+  /* Buttons (base reset) */
+  button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.5em 1em;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: var(--font-body);
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  /* Images */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  background: linear-gradient(135deg, #f5f5f5 0%, #f0f0f0 100%);
+/* ---------- Selection ---------- */
+::selection {
+  background: #2563eb;
+  color: #fff;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-  color: #1a1a1a;
+/* ---------- Focus visible ---------- */
+:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color 0.25s;
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ---------- Component layer ---------- */
+@layer components {
+  /* Section wrapper – consistent vertical rhythm */
+  .section {
+    @apply py-16 md:py-24;
+  }
+  .section-sm {
+    @apply py-12 md:py-16;
+  }
+
+  /* Container – consistent max-width + padding */
+  .container-main {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Section header pattern */
+  .section-header {
+    @apply text-center mb-12 md:mb-16;
+  }
+  .section-header h2 {
+    @apply text-3xl md:text-4xl font-bold text-gray-900 mb-4;
+  }
+  .section-header p {
+    @apply text-lg text-gray-500 max-w-2xl mx-auto;
+  }
+
+  /* Card style shorthand */
+  .card {
+    @apply bg-white rounded-xl border border-gray-100 shadow-sm;
+  }
+  .card-hover {
+    @apply card transition-all duration-200 hover:shadow-md hover:border-gray-200;
+  }
+
+  /* Subtle slide-up animation for notifications */
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
 }
 
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Utilities ---------- */
 @layer utilities {
   .line-clamp-1 {
     overflow: hidden;
@@ -53,24 +161,27 @@ button {
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
   }
-
   .line-clamp-2 {
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
   }
-
   .line-clamp-3 {
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
   }
+
+  /* Text balance for headings */
+  .text-balance {
+    text-wrap: balance;
+  }
 }
 
 html.dark {
   color-scheme: dark;
   color: #fff;
-  background-color: #242424;
+  background-color: #0f172a;
 }

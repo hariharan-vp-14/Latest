@@ -65,7 +65,11 @@ module.exports.registerHost = async (req, res) => {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     });
 
-    await sendWelcomeEmail(host.email, "Host");
+    try {
+      await sendWelcomeEmail(host.email, "Host");
+    } catch (emailErr) {
+      console.warn("⚠️ Host welcome email failed:", emailErr.message);
+    }
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,

@@ -36,21 +36,25 @@ export const VerifyEmail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white shadow-lg">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white shadow-card border border-gray-200">
         <div className="text-center">
           {status === 'success' ? (
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-7 h-7 text-emerald-600" />
+            </div>
           ) : (
-            <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <div className="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <XCircle className="w-7 h-7 text-red-600" />
+            </div>
           )}
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">
             {status === 'success' ? 'Email Verified!' : 'Verification Failed'}
           </h1>
-          <p className="text-gray-600 mb-6">{message}</p>
+          <p className="text-gray-500 text-sm mb-6">{message}</p>
           <Button
             onClick={() => navigate('/login')}
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
           >
             Go to Login
           </Button>

@@ -25,15 +25,15 @@ export const Events = () => {
   const categories = ['all', 'tech', 'arts', 'business', 'education'];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Explore Events</h1>
-          <p className="text-gray-600">Discover upcoming conferences and networking opportunities</p>
+    <div className="min-h-screen bg-white">
+      <div className="container-main section-sm">
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold text-gray-900 mb-3 tracking-tight">Explore Events</h1>
+          <p className="text-gray-500">Discover upcoming conferences and networking opportunities</p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg p-6 shadow-custom mb-8">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-card mb-8">
           <div className="grid md:grid-cols-2 gap-4">
             <Input
               type="text"
@@ -46,10 +46,10 @@ export const Events = () => {
                 <button
                   key={cat}
                   onClick={() => setFilter(cat)}
-                  className={`px-4 py-2 rounded-lg font-medium transition capitalize ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
                     filter === cat
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >
                   {cat}
@@ -63,7 +63,7 @@ export const Events = () => {
         {loading && <Loading />}
         {error && <Alert type="error" message={error} />}
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredEvents.map(event => (
             <EventCard key={event.id} event={event} onRegister={registerForConference} />
           ))}
@@ -142,7 +142,7 @@ const EventCard = ({ event, onRegister }) => {
           </div>
 
           {/* Meeting Link Section - Visible to authenticated users */}
-          <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
             {isAuthenticated ? (
               <div>
                 <p className="text-xs font-semibold text-blue-600 mb-2">📍 {getMeetingPlatform()} Link</p>
@@ -311,12 +311,12 @@ export const CreateEvent = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Create New Event</h1>
-          <p className="text-gray-600 mt-1">Fill in the details below to create your event</p>
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <h1 className="text-2xl font-bold text-gray-900">Create New Event</h1>
+          <p className="text-gray-500 text-sm mt-1">Fill in the details below to create your event</p>
         </div>
       </div>
 
@@ -517,19 +517,19 @@ const EventDetailsModal = ({
   if (!isOpen || !event) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 shadow-lg">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white flex justify-between items-start">
+        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-start rounded-t-xl">
           <div>
-            <h2 className="text-2xl font-bold mb-2">{event.title}</h2>
-            <Badge variant="success" className="bg-white/30">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">{event.title}</h2>
+            <Badge variant="success">
               {event.approved ? 'Approved' : 'Pending Approval'}
             </Badge>
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:bg-white/20 p-2 rounded-lg transition"
+            className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition"
           >
             ✕
           </button>
@@ -600,7 +600,7 @@ const EventDetailsModal = ({
 
             {/* Meeting Link Section */}
             {event.meetingLink && isAuthenticated && (
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 p-4 rounded-lg">
+              <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
                 <p className="text-xs text-green-600 font-semibold mb-2">✅ 📍 {getMeetingPlatform()} Meeting Link</p>
                 <a
                   href={event.meetingLink}

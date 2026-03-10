@@ -10,22 +10,22 @@ export const Button = ({
   disabled = false,
   ...props 
 }) => {
-  const baseStyles = 'font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseStyles = 'font-semibold rounded-lg transition-all duration-200 ease-out flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 tracking-wide active:scale-[0.97]';
   
   const variants = {
-    primary: 'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-300',
-    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-300',
-    outline: 'border-2 border-primary-500 text-primary-500 hover:bg-primary-50 focus:ring-primary-300',
-    danger: 'bg-danger text-white hover:bg-red-600 focus:ring-red-300',
-    success: 'bg-success text-white hover:bg-pink-500 focus:ring-pink-300',
-    ghost: 'text-primary-500 hover:bg-primary-50 focus:ring-primary-300',
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300 shadow-sm hover:shadow-md',
+    secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-300 border border-gray-200',
+    outline: 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50 focus:ring-blue-300',
+    danger: 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-300 shadow-sm hover:shadow-md',
+    success: 'bg-emerald-500 text-white hover:bg-emerald-600 focus:ring-emerald-300 shadow-sm hover:shadow-md',
+    ghost: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-300',
   };
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2.5 text-base',
-    lg: 'px-6 py-3 text-lg',
-    xl: 'px-8 py-4 text-lg',
+    sm: 'px-3 py-1.5 text-xs',
+    md: 'px-4 py-2 text-sm',
+    lg: 'px-5 py-2.5 text-sm',
+    xl: 'px-6 py-3 text-base',
   };
 
   return (
@@ -37,7 +37,7 @@ export const Button = ({
       {...props}
     >
       {loading && (
-        <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+        <div className="animate-spin h-3.5 w-3.5 border-2 border-current border-t-transparent rounded-full" />
       )}
       {children}
     </button>
@@ -54,19 +54,19 @@ export const Input = ({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1.5 tracking-wide">
           {label}
-          {props.required && <span className="text-danger ml-1">*</span>}
+          {props.required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
       )}
       <input
-        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition ${
-          error && touched ? 'border-danger' : 'border-gray-200'
+        className={`w-full px-3.5 py-2.5 text-sm border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400 ${
+          error && touched ? 'border-red-400 focus:ring-red-500/20 focus:border-red-500' : 'border-gray-200 hover:border-gray-300'
         } ${className}`}
         {...props}
       />
       {error && touched && (
-        <p className="text-danger text-sm mt-1">{error}</p>
+        <p className="text-red-500 text-xs mt-1.5 font-medium">{error}</p>
       )}
     </div>
   );
@@ -82,19 +82,19 @@ export const TextArea = ({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1.5 tracking-wide">
           {label}
-          {props.required && <span className="text-danger ml-1">*</span>}
+          {props.required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
       )}
       <textarea
-        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition resize-none ${
-          error && touched ? 'border-danger' : 'border-gray-200'
+        className={`w-full px-3.5 py-2.5 text-sm border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 resize-none placeholder:text-gray-400 ${
+          error && touched ? 'border-red-400 focus:ring-red-500/20 focus:border-red-500' : 'border-gray-200 hover:border-gray-300'
         } ${className}`}
         {...props}
       />
       {error && touched && (
-        <p className="text-danger text-sm mt-1">{error}</p>
+        <p className="text-red-500 text-xs mt-1.5 font-medium">{error}</p>
       )}
     </div>
   );
@@ -111,14 +111,14 @@ export const Select = ({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1.5 tracking-wide">
           {label}
-          {props.required && <span className="text-danger ml-1">*</span>}
+          {props.required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
       )}
       <select
-        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition ${
-          error && touched ? 'border-danger' : 'border-gray-200'
+        className={`w-full px-3.5 py-2.5 text-sm border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 ${
+          error && touched ? 'border-red-400 focus:ring-red-500/20 focus:border-red-500' : 'border-gray-200 hover:border-gray-300'
         } ${className}`}
         {...props}
       >
@@ -130,7 +130,7 @@ export const Select = ({
         ))}
       </select>
       {error && touched && (
-        <p className="text-danger text-sm mt-1">{error}</p>
+        <p className="text-red-500 text-xs mt-1.5 font-medium">{error}</p>
       )}
     </div>
   );
@@ -138,15 +138,15 @@ export const Select = ({
 
 export const Badge = ({ children, variant = 'primary', className = '' }) => {
   const variants = {
-    primary: 'bg-primary-100 text-primary-800',
-    success: 'bg-green-100 text-green-800',
-    warning: 'bg-warning/10 text-warning',
-    danger: 'bg-danger/10 text-danger',
-    secondary: 'bg-gray-100 text-gray-800',
+    primary: 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/10',
+    success: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/10',
+    warning: 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/10',
+    danger: 'bg-red-50 text-red-700 ring-1 ring-red-600/10',
+    secondary: 'bg-gray-50 text-gray-700 ring-1 ring-gray-500/10',
   };
 
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${variants[variant]} ${className}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide ${variants[variant]} ${className}`}>
       {children}
     </span>
   );
@@ -155,8 +155,8 @@ export const Badge = ({ children, variant = 'primary', className = '' }) => {
 export const Card = ({ children, className = '', hover = false, ...props }) => {
   return (
     <div
-      className={`bg-white rounded-lg p-6 shadow-custom border border-gray-100 transition-all duration-300 ${
-        hover ? 'hover:shadow-custom-lg hover:border-primary-300' : ''
+      className={`bg-white rounded-xl p-6 shadow-sm border border-gray-100 transition-all duration-300 ${
+        hover ? 'hover:shadow-md hover:border-gray-200 hover:-translate-y-0.5' : ''
       } ${className}`}
       {...props}
     >
@@ -178,13 +178,13 @@ export const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className={`relative bg-white rounded-lg shadow-custom-lg ${sizes[size]} w-full`}>
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className={`relative bg-white rounded-xl shadow-2xl ${sizes[size]} w-full`}>
+        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900 tracking-tight">{title}</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -242,7 +242,7 @@ export const Loading = ({ size = 'md' }) => {
 
   return (
     <div className="flex items-center justify-center">
-      <div className={`${sizes[size]} border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin`} />
+      <div className={`${sizes[size]} border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin`} />
     </div>
   );
 };
@@ -255,10 +255,10 @@ export const Tabs = ({ tabs, activeTab, onTabChange }) => {
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 ${
+            className={`px-5 py-2.5 font-medium text-sm transition-all duration-200 border-b-2 ${
               activeTab === tab.id
-                ? 'border-primary-500 text-primary-500'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
             {tab.label}

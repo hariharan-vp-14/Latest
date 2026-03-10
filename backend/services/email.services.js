@@ -1,226 +1,154 @@
 const nodemailer = require("nodemailer");
 
 /* =================================================
-   CREATE TRANSPORTER
+   REUSABLE TRANSPORTER (singleton – created once)
 ================================================= */
+let _transporter = null;
+
 const createTransporter = async () => {
-  // Production: Gmail
-  if (process.env.EMAIL_USER && process.env.ELMAIL_PASS) {
-    return nodemailer.createTransport({
+  if (_transporter) return _transporter;
+
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    _transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.ELMAIL_PASS
-      }
+        pass: process.env.EMAIL_PASS,
+      },
     });
+    console.log("✅ Email transporter configured with Gmail:", process.env.EMAIL_USER);
+    return _transporter;
   }
 
   // Development fallback: Ethereal
   const testAccount = await nodemailer.createTestAccount();
-
   console.warn("⚠️ EMAIL_USER / EMAIL_PASS not set — using Ethereal test email");
-
-  return nodemailer.createTransport({
+  _transporter = nodemailer.createTransport({
     host: "smtp.ethereal.email",
     port: 587,
     secure: false,
-    auth: {
-      user: testAccount.user,
-      pass: testAccount.pass
-    }
+    auth: { user: testAccount.user, pass: testAccount.pass },
   });
+  return _transporter;
 };
 
 /* =================================================
-   EVENT APPROVAL / REJECTION EMAIL
+   SHARED STYLES / HELPERS
 ================================================= */
-exports.sendEventApprovalMail = async (to, eventName, status) => {
-  const transporter = await createTransporter();
+const BRAND = "TalentConnect Pro";
+const BRAND_COLOR = "#2563eb";
+const YEAR = new Date().getFullYear();
 
-  const isApproved = status === "approved";
-
-  const subject = isApproved
-    ? "🎉 Your Event Has Been Approved - TalentConnect Pro"
-    : "❌ Your Event Has Been Rejected - TalentConnect Pro";
-
-  const html = `
-    <div style="font-family: Arial, sans-serif;">
-      <h2>TalentConnect Pro</h2>
-      <p>Hello,</p>
-      <p>
-        Your event <strong>${eventName}</strong> has been
-        <strong style="color:${isApproved ? "green" : "red"};">
-          ${status.toUpperCase()}
-        </strong>.
-      </p>
-      ${
-        isApproved
-          ? "<p>Your event is now visible to the public.</p>"
-          : "<p>You may edit and resubmit the event if required.</p>"
-      }
-      <br />
-      <p>Regards,<br/>TalentConnect Pro Team</p>
+const baseWrapper = (headerBg, headerTitle, bodyHtml) => `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
+  <div style="max-width:620px;margin:30px auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+    <!-- HEADER -->
+    <div style="background:${headerBg};padding:32px 30px;text-align:center;">
+      <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:0.5px;">${headerTitle}</h1>
     </div>
-  `;
-
-  const info = await transporter.sendMail({
-    from: `"TalentConnect Pro" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
-    to,
-    subject,
-    html
-  });
-
-  const previewUrl = nodemailer.getTestMessageUrl(info);
-  if (previewUrl) {
-    console.log("📧 Event email preview URL:", previewUrl);
-  }
-};
-
-/* =================================================
-   🔐 FORGOT PASSWORD EMAIL (HOST & ADMIN)
-================================================= */
-exports.sendPasswordResetMail = async (to, resetLink, role) => {
-  const transporter = await createTransporter();
-
-  const subject = `Reset Your Password - TalentConnect Pro (${role})`;
-
-  const html = `
-    <div style="font-family: Arial, sans-serif;">
-      <h2>TalentConnect Pro</h2>
-      <p>You requested to reset your <strong>${role}</strong> account password.</p>
-      <p>Click the link below to reset your password:</p>
-      <a href="${resetLink}">Reset Password</a>
-      <p><b>This link is valid for 15 minutes.</b></p>
-      <p>If you did not request this, please ignore this email.</p>
-      <br />
-      <p>Regards,<br/>TalentConnect Pro Team</p>
+    <!-- BODY -->
+    <div style="padding:36px 30px 24px;">
+      ${bodyHtml}
     </div>
-  `;
-
-  const info = await transporter.sendMail({
-    from: `"TalentConnect Pro" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
-    to,
-    subject,
-    html
-  });
-
-  const previewUrl = nodemailer.getTestMessageUrl(info);
-  if (previewUrl) {
-    console.log("📧 Password reset email preview URL:", previewUrl);
-  }
-};
-
-/* =================================================
-   LOGIN NOTIFICATION EMAIL
-================================================= */
-exports.sendLoginNotificationMail = async (to, role) => {
-  const transporter = await createTransporter();
-
-  const subject = `Login Notification - TalentConnect Pro`;
-
-  const html = `
-    <div style="font-family: Arial, sans-serif;">
-      <h2>TalentConnect Pro</h2>
-      <p>Hello,</p>
-      <p>You have successfully logged in as a <strong>${role}</strong>.</p>
-      <p>If this wasn't you, please contact support immediately.</p>
-      <br>
-      <p>Best regards,<br>TalentConnect Pro Team</p>
+    <!-- FOOTER -->
+    <div style="background:#f9fafb;padding:20px 30px;text-align:center;border-top:1px solid #e5e7eb;">
+      <p style="margin:0;font-size:12px;color:#9ca3af;">&copy; ${YEAR} ${BRAND}. All rights reserved.</p>
+      <p style="margin:6px 0 0;font-size:11px;color:#9ca3af;">This is an automated message — please do not reply directly.</p>
     </div>
-  `;
+  </div>
+</body>
+</html>`;
 
-  const info = await transporter.sendMail({
-    from: `"TalentConnect Pro" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
-    to,
-    subject,
-    html
+const btn = (href, label, bg = BRAND_COLOR) =>
+  `<div style="text-align:center;margin:28px 0 12px;">
+    <a href="${href}" style="display:inline-block;background:${bg};color:#fff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">${label}</a>
+  </div>`;
+
+const infoRow = (icon, label, value) =>
+  value
+    ? `<tr>
+        <td style="padding:10px 0;color:#6b7280;width:36%;font-size:14px;">${icon} <strong>${label}</strong></td>
+        <td style="padding:10px 0;color:#1f2937;font-size:14px;">${value}</td>
+      </tr>`
+    : "";
+
+const formatDate = (d) => {
+  if (!d) return "TBD";
+  return new Date(d).toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
-
-  const previewUrl = nodemailer.getTestMessageUrl(info);
-  if (previewUrl) {
-    console.log("📧 Login notification email preview URL:", previewUrl);
-  }
 };
 
+const frontendUrl = () => process.env.FRONTEND_URL || "http://localhost:5173";
+
 /* =================================================
-   WELCOME EMAIL (USER, ADMIN, HOST)
+   1. WELCOME EMAIL (User / Host / Admin signup)
 ================================================= */
-exports.sendWelcomeEmail = async (to, role = "User") => {
+exports.sendWelcomeEmail = async (to, role = "User", name = "") => {
   try {
     const transporter = await createTransporter();
 
-    const subject = `Welcome to TalentConnect Pro - ${role} Account Created`;
+    const roleGuide = {
+      User: [
+        "Browse and register for exciting events",
+        "Receive email reminders for upcoming events",
+        "Track your registered events from your dashboard",
+        "Connect with talented participants",
+      ],
+      Host: [
+        "Create and submit events for approval",
+        "Track your events' approval status",
+        "Manage registrations and attendees",
+        "Receive email updates when events are approved or rejected",
+      ],
+      Administrator: [
+        "Review and approve/reject submitted events",
+        "Monitor platform activity and statistics",
+        "Manage hosts and users",
+        "Oversee overall platform operations",
+      ],
+    };
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-          <h1 style="margin: 0; font-size: 28px;">Welcome to TalentConnect Pro! 🎉</h1>
-        </div>
-        
-        <div style="padding: 30px; background: #f9fafb;">
-          <p style="font-size: 16px; color: #333; margin-bottom: 10px;">Hello,</p>
-          
-          <p style="font-size: 14px; color: #666; margin-bottom: 15px;">
-            Thank you for creating your <strong>${role}</strong> account on TalentConnect Pro. 
-            We're excited to have you on board!
-          </p>
-          
-          <div style="background: white; border: 2px solid #e5e7eb; border-left: 4px solid #2563eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h3 style="color: #1f2937; margin-top: 0;">What's Next?</h3>
-            
-            ${role === 'User' ? `
-              <ul style="color: #666; font-size: 14px; padding-left: 20px;">
-                <li>Complete your profile information</li>
-                <li>Explore and register for events</li>
-                <li>Connect with other participants</li>
-              </ul>
-            ` : role === 'Administrator' ? `
-              <ul style="color: #666; font-size: 14px; padding-left: 20px;">
-                <li>Review pending events</li>
-                <li>Approve or reject event submissions</li>
-                <li>Monitor platform activity</li>
-              </ul>
-            ` : `
-              <ul style="color: #666; font-size: 14px; padding-left: 20px;">
-                <li>Complete your organization profile</li>
-                <li>Create and submit your first event</li>
-                <li>Manage event registrations</li>
-              </ul>
-            `}
-          </div>
-          
-          <div style="background: #dbeafe; border-left: 4px solid #2563eb; padding: 15px; border-radius: 4px; margin: 20px 0;">
-            <p style="margin: 0; color: #1e40af; font-size: 14px;">
-              <strong>Need help?</strong> Check out our support center or contact our team for assistance.
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin-top: 30px;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login" 
-               style="display: inline-block; background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-              Go to Dashboard
-            </a>
-          </div>
-        </div>
-        
-        <div style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px;">
-          <p style="margin: 0;">TalentConnect Pro © ${new Date().getFullYear()}</p>
-          <p style="margin: 5px 0 0 0; font-size: 11px;">This is an automated email. Please do not reply directly.</p>
-        </div>
+    const items = (roleGuide[role] || roleGuide.User)
+      .map((t) => `<li style="padding:6px 0;color:#4b5563;font-size:14px;">${t}</li>`)
+      .join("");
+
+    const greeting = name ? `Hello ${name},` : "Hello,";
+
+    const body = `
+      <p style="font-size:16px;color:#1f2937;margin:0 0 8px;">${greeting}</p>
+      <p style="font-size:15px;color:#4b5563;line-height:1.6;">
+        Welcome to <strong>${BRAND}</strong>! Your <strong>${role}</strong> account has been created successfully.
+      </p>
+
+      <div style="background:#f0f9ff;border:1px solid #bae6fd;border-left:4px solid ${BRAND_COLOR};border-radius:8px;padding:20px;margin:24px 0;">
+        <h3 style="margin:0 0 12px;color:#1e3a5f;font-size:16px;">🚀 Getting Started</h3>
+        <ul style="margin:0;padding-left:20px;">${items}</ul>
       </div>
+
+      ${btn(frontendUrl() + "/login", "Go to Dashboard")}
     `;
 
-    const info = await transporter.sendMail({
-      from: `"TalentConnect Pro" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
+    const html = baseWrapper(
+      `linear-gradient(135deg, ${BRAND_COLOR} 0%, #1d4ed8 100%)`,
+      `🎉 Welcome to ${BRAND}!`,
+      body
+    );
+
+    await transporter.sendMail({
+      from: `"${BRAND}" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
       to,
-      subject,
-      html
+      subject: `Welcome to ${BRAND} — ${role} Account Created`,
+      html,
     });
 
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) {
-      console.log(`📧 Welcome email (${role}) preview URL:`, previewUrl);
-    }
+    console.log(`✅ Welcome email sent to ${to} (${role})`);
     return true;
   } catch (err) {
     console.error(`❌ Failed to send welcome email (${role}):`, err.message);
@@ -229,278 +157,435 @@ exports.sendWelcomeEmail = async (to, role = "User") => {
 };
 
 /* =================================================
-   HOST NOTIFICATION: EVENT APPROVED/REJECTED
+   2. EVENT APPROVAL / REJECTION → HOST
 ================================================= */
-exports.sendEventDecisionNotification = async (hostEmail, hostName, eventName, status, rejectionReason = null, eventDetails = null) => {
-  const transporter = await createTransporter();
-
-  const isApproved = status === 'approved';
-  const subject = isApproved 
-    ? "✅ Your Event Has Been Approved - TalentConnect Pro"
-    : "❌ Your Event Has Been Rejected - TalentConnect Pro";
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  };
-
-  const eventDetailsHTML = eventDetails ? `
-    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 20px; margin: 20px 0;">
-      <h3 style="margin-top: 0; color: #1f2937;">📋 Event Details</h3>
-      
-      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-        <tr style="border-bottom: 1px solid #f3f4f6;">
-          <td style="padding: 12px 0; color: #666; width: 30%;"><strong>Title:</strong></td>
-          <td style="padding: 12px 0; color: #1f2937;">${eventDetails.eventName || eventName}</td>
-        </tr>
-        ${eventDetails.description ? `
-        <tr style="border-bottom: 1px solid #f3f4f6;">
-          <td style="padding: 12px 0; color: #666; vertical-align: top;"><strong>Description:</strong></td>
-          <td style="padding: 12px 0; color: #1f2937;">${eventDetails.description}</td>
-        </tr>
-        ` : ''}
-        ${eventDetails.eventDate ? `
-        <tr style="border-bottom: 1px solid #f3f4f6;">
-          <td style="padding: 12px 0; color: #666;"><strong>📅 Date:</strong></td>
-          <td style="padding: 12px 0; color: #1f2937;">${formatDate(eventDetails.eventDate)}</td>
-        </tr>
-        ` : ''}
-        ${eventDetails.eventTime ? `
-        <tr style="border-bottom: 1px solid #f3f4f6;">
-          <td style="padding: 12px 0; color: #666;"><strong>⏰ Time:</strong></td>
-          <td style="padding: 12px 0; color: #1f2937;">${eventDetails.eventTime}</td>
-        </tr>
-        ` : ''}
-        ${eventDetails.capacity ? `
-        <tr style="border-bottom: 1px solid #f3f4f6;">
-          <td style="padding: 12px 0; color: #666;"><strong>👥 Capacity:</strong></td>
-          <td style="padding: 12px 0; color: #1f2937;">${eventDetails.capacity} participants</td>
-        </tr>
-        ` : ''}
-        ${eventDetails.category ? `
-        <tr style="border-bottom: 1px solid #f3f4f6;">
-          <td style="padding: 12px 0; color: #666;"><strong>🏷️ Category:</strong></td>
-          <td style="padding: 12px 0; color: #1f2937; text-transform: capitalize;">${eventDetails.category}</td>
-        </tr>
-        ` : ''}
-        ${eventDetails.meetingLink ? `
-        <tr>
-          <td style="padding: 12px 0; color: #666;"><strong>🔗 Meeting Link:</strong></td>
-          <td style="padding: 12px 0;"><a href="${eventDetails.meetingLink}" style="color: #3b82f6; text-decoration: none; word-break: break-all;">${eventDetails.meetingLink}</a></td>
-        </tr>
-        ` : ''}
-      </table>
-    </div>
-  ` : '';
-
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <div style="background: linear-gradient(135deg, ${isApproved ? '#10b981' : '#ef4444'} 0%, ${isApproved ? '#059669' : '#dc2626'} 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-        <h1 style="margin: 0; font-size: 24px;">${isApproved ? '✅ Event Approved' : '❌ Event Rejected'}</h1>
-      </div>
-      
-      <div style="padding: 30px; background: #f9fafb;">
-        <p style="font-size: 16px; margin-bottom: 10px;">Hello ${hostName},</p>
-        
-        ${isApproved 
-          ? `<p style="font-size: 14px; color: #059669; font-weight: bold;">Great news! Your event has been approved and is now live!</p>
-             <p style="font-size: 14px; color: #666;">Your event "<strong>${eventName}</strong>" is now visible to all users and they can register for it.</p>`
-          : `<p style="font-size: 14px; color: #dc2626; font-weight: bold;">Unfortunately, your event has been rejected.</p>
-             <p style="font-size: 14px; color: #666;">Your event "<strong>${eventName}</strong>" was not approved at this time.</p>
-             ${rejectionReason ? `<div style="background: #fee2e2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; padding: 15px; border-radius: 4px; margin: 15px 0;">
-               <p style="margin: 0; color: #7f1d1d; font-size: 13px;"><strong>Reason:</strong> ${rejectionReason}</p>
-             </div>` : ''}`
-        }
-        
-        ${eventDetailsHTML}
-        
-        <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 4px; margin: 20px 0;">
-          <p style="margin: 0; color: #1e40af; font-size: 14px;">
-            ${isApproved 
-              ? '<strong>Next steps:</strong> Monitor registrations and prepare for your event.'
-              : '<strong>Next steps:</strong> You can edit and resubmit your event for review.'
-            }
-          </p>
-        </div>
-        
-        <div style="text-align: center; margin-top: 30px;">
-          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/host-dashboard" 
-             style="display: inline-block; background: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-            Go to Dashboard
-          </a>
-        </div>
-      </div>
-      
-      <div style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px;">
-        <p style="margin: 0;">TalentConnect Pro © ${new Date().getFullYear()}</p>
-      </div>
-    </div>
-  `;
-
+exports.sendEventDecisionNotification = async (
+  hostEmail,
+  hostName,
+  eventName,
+  status,
+  rejectionReason = null,
+  eventDetails = null
+) => {
   try {
-    const info = await transporter.sendMail({
-      from: `"TalentConnect Pro" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
+    const transporter = await createTransporter();
+    const isApproved = status === "approved";
+
+    /* ---- event details table ---- */
+    let detailsBlock = "";
+    if (eventDetails) {
+      const rows = [
+        infoRow("📌", "Title", eventDetails.eventName || eventName),
+        infoRow("📅", "Date", formatDate(eventDetails.eventDate)),
+        infoRow("⏰", "Time", eventDetails.eventTime),
+        infoRow("🏷️", "Category", eventDetails.category ? eventDetails.category.charAt(0).toUpperCase() + eventDetails.category.slice(1) : null),
+        infoRow("👥", "Capacity", eventDetails.capacity ? `${eventDetails.capacity} participants` : null),
+        infoRow("🔗", "Meeting Link", eventDetails.meetingLink ? `<a href="${eventDetails.meetingLink}" style="color:${BRAND_COLOR};word-break:break-all;">${eventDetails.meetingLink}</a>` : null),
+      ].join("");
+
+      detailsBlock = `
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
+          <h3 style="margin:0 0 14px;color:#1f2937;font-size:15px;">📋 Event Details</h3>
+          <table style="width:100%;border-collapse:collapse;">${rows}</table>
+          ${eventDetails.description ? `<p style="margin:14px 0 0;color:#6b7280;font-size:13px;line-height:1.5;border-top:1px solid #e5e7eb;padding-top:14px;"><strong>Description:</strong> ${eventDetails.description}</p>` : ""}
+        </div>`;
+    }
+
+    /* ---- rejection reason ---- */
+    const reasonBlock =
+      !isApproved && rejectionReason
+        ? `<div style="background:#fef2f2;border:1px solid #fecaca;border-left:4px solid #ef4444;padding:16px;border-radius:6px;margin:16px 0;">
+            <p style="margin:0;color:#991b1b;font-size:14px;"><strong>Reason for rejection:</strong> ${rejectionReason}</p>
+          </div>`
+        : "";
+
+    const body = `
+      <p style="font-size:16px;color:#1f2937;margin:0 0 8px;">Hello ${hostName},</p>
+
+      ${
+        isApproved
+          ? `<div style="background:#ecfdf5;border-left:4px solid #10b981;padding:16px;border-radius:6px;margin:16px 0;">
+              <p style="margin:0;color:#065f46;font-size:15px;font-weight:600;">🎉 Great news! Your event "<strong>${eventName}</strong>" has been approved and is now live.</p>
+            </div>
+            <p style="font-size:14px;color:#4b5563;line-height:1.6;">Users can now discover and register for your event. You'll be notified as registrations come in.</p>`
+          : `<div style="background:#fef2f2;border-left:4px solid #ef4444;padding:16px;border-radius:6px;margin:16px 0;">
+              <p style="margin:0;color:#991b1b;font-size:15px;font-weight:600;">Your event "<strong>${eventName}</strong>" was not approved at this time.</p>
+            </div>
+            ${reasonBlock}
+            <p style="font-size:14px;color:#4b5563;line-height:1.6;">You may edit and resubmit the event after addressing any feedback.</p>`
+      }
+
+      ${detailsBlock}
+
+      <div style="background:#eff6ff;border-left:4px solid ${BRAND_COLOR};padding:14px;border-radius:6px;margin:20px 0;">
+        <p style="margin:0;color:#1e40af;font-size:14px;">
+          <strong>Next steps:</strong> ${isApproved ? "Monitor registrations and prepare for your event." : "Review the feedback, edit your event, and resubmit for approval."}
+        </p>
+      </div>
+
+      ${btn(frontendUrl() + "/host-dashboard", "Go to Host Dashboard")}
+    `;
+
+    const html = baseWrapper(
+      `linear-gradient(135deg, ${isApproved ? "#10b981" : "#ef4444"} 0%, ${isApproved ? "#059669" : "#dc2626"} 100%)`,
+      isApproved ? "✅ Event Approved" : "❌ Event Rejected",
+      body
+    );
+
+    await transporter.sendMail({
+      from: `"${BRAND}" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
       to: hostEmail,
-      subject,
-      html
+      subject: isApproved
+        ? `✅ Your Event "${eventName}" Has Been Approved — ${BRAND}`
+        : `❌ Your Event "${eventName}" Has Been Rejected — ${BRAND}`,
+      html,
     });
 
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) {
-      console.log(`📧 Event ${status} notification preview URL:`, previewUrl);
-    }
+    console.log(`✅ Event ${status} email sent to ${hostEmail}`);
     return true;
   } catch (err) {
-    console.error(`❌ Failed to send event ${status} notification:`, err);
-    return false;
-  }
-};
-exports.sendAdminNewEventNotification = async (adminEmail, eventName, hostName, eventDetails) => {
-  const transporter = await createTransporter();
-
-  const subject = "🎯 New Event Awaiting Approval - TalentConnect Pro";
-
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-        <h1 style="margin: 0; font-size: 24px;">🎯 New Event Awaiting Approval</h1>
-      </div>
-      
-      <div style="padding: 30px; background: #f9fafb;">
-        <p style="font-size: 16px; margin-bottom: 20px;">Hello Admin,</p>
-        
-        <p style="font-size: 14px; color: #666;">A new event has been submitted and is waiting for your review:</p>
-        
-        <div style="background: white; border: 2px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-          <h2 style="color: #1f2937; margin-top: 0;">${eventName}</h2>
-          
-          <p style="margin: 8px 0;"><strong>Submitted by:</strong> ${hostName}</p>
-          <p style="margin: 8px 0;"><strong>Category:</strong> ${eventDetails.category || 'N/A'}</p>
-          <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(eventDetails.eventDate).toLocaleDateString()}</p>
-          <p style="margin: 8px 0;"><strong>Time:</strong> ${eventDetails.eventTime || 'N/A'}</p>
-          <p style="margin: 8px 0;"><strong>Capacity:</strong> ${eventDetails.capacity || 'N/A'} participants</p>
-          
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
-          
-          <p style="color: #666; font-size: 13px; margin: 8px 0;"><strong>Description:</strong></p>
-          <p style="color: #666; font-size: 13px; margin: 8px 0;">${eventDetails.description || 'N/A'}</p>
-        </div>
-        
-        <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 4px; margin: 20px 0;">
-          <p style="margin: 0; color: #1e40af; font-size: 14px;">
-            <strong>Action Required:</strong> Please review this event and approve or reject it within 24 hours.
-          </p>
-        </div>
-        
-        <div style="text-align: center; margin-top: 30px;">
-          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/events" 
-             style="display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-            Review Events
-          </a>
-        </div>
-      </div>
-      
-      <div style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px;">
-        <p style="margin: 0;">TalentConnect Pro © ${new Date().getFullYear()}</p>
-      </div>
-    </div>
-  `;
-
-  try {
-    const info = await transporter.sendMail({
-      from: `"TalentConnect Pro" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
-      to: adminEmail,
-      subject,
-      html
-    });
-
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) {
-      console.log("📧 Admin notification email preview URL:", previewUrl);
-    }
-    return true;
-  } catch (err) {
-    console.error("❌ Failed to send admin notification email:", err);
+    console.error(`❌ Failed to send event ${status} notification:`, err.message);
     return false;
   }
 };
 
 /* =================================================
-   EVENT REGISTRATION CONFIRMATION EMAIL
+   3. ADMIN NOTIFICATION — NEW EVENT SUBMITTED
 ================================================= */
-exports.sendEventRegistrationConfirmation = async (to, name, eventName, eventDate, eventTime, eventDescription) => {
-  const transporter = await createTransporter();
-
-  const subject = `🎉 Registration Confirmed - ${eventName}`;
-
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center; border-radius: 8px 8px 0 0;">
-        <h1 style="color: white; margin: 0; font-size: 28px;">TalentConnect Pro</h1>
-        <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Event Registration Confirmation</p>
-      </div>
-      
-      <div style="background: white; padding: 40px 30px; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-        <h2 style="color: #333; margin-bottom: 20px;">Welcome ${name}!</h2>
-        
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #667eea; margin: 0 0 15px 0;">Your registration for "${eventName}" has been confirmed!</h3>
-          
-          <div style="margin: 15px 0;">
-            <strong>Event Details:</strong><br>
-            <span style="color: #666;">Date: ${eventDate ? new Date(eventDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD'}</span><br>
-            <span style="color: #666;">Time: ${eventTime || 'TBD'}</span>
-          </div>
-          
-          <div style="margin: 15px 0;">
-            <strong>Description:</strong><br>
-            <span style="color: #666;">${eventDescription || 'Join us for an exciting event!'}</span>
-          </div>
-        </div>
-        
-        <div style="background: #e8f5e8; border: 1px solid #4caf50; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <p style="color: #2e7d32; margin: 0; font-weight: bold;">
-            🎯 Best of luck with your participation! We're excited to see your talents shine.
-          </p>
-        </div>
-        
-        <p style="color: #666; line-height: 1.6;">
-          You will receive the meeting link and any additional updates via email closer to the event date.
-        </p>
-        
-        <p style="color: #666; line-height: 1.6;">
-          If you have any questions, feel free to reach out to our support team.
-        </p>
-        
-        <div style="text-align: center; margin-top: 30px;">
-          <a href="${process.env.FRONTEND_URL || 'https://talentconnectpro.com'}/events" 
-             style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-            View All Events
-          </a>
-        </div>
-      </div>
-      
-      <div style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px;">
-        <p style="margin: 0;">TalentConnect Pro © ${new Date().getFullYear()}</p>
-      </div>
-    </div>
-  `;
-
+exports.sendAdminNewEventNotification = async (adminEmail, eventName, hostName, eventDetails) => {
   try {
-    const info = await transporter.sendMail({
-      from: `"TalentConnect Pro" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
-      to,
-      subject,
-      html
+    const transporter = await createTransporter();
+
+    const rows = [
+      infoRow("👤", "Submitted by", hostName),
+      infoRow("🏷️", "Category", eventDetails.category ? eventDetails.category.charAt(0).toUpperCase() + eventDetails.category.slice(1) : null),
+      infoRow("📅", "Date", formatDate(eventDetails.eventDate)),
+      infoRow("⏰", "Time", eventDetails.eventTime),
+      infoRow("👥", "Capacity", eventDetails.capacity ? `${eventDetails.capacity} participants` : null),
+    ].join("");
+
+    const body = `
+      <p style="font-size:16px;color:#1f2937;margin:0 0 8px;">Hello Admin,</p>
+      <p style="font-size:14px;color:#4b5563;line-height:1.6;">A new event has been submitted and is awaiting your review.</p>
+
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
+        <h3 style="margin:0 0 4px;color:#1f2937;font-size:18px;">${eventName}</h3>
+        <table style="width:100%;border-collapse:collapse;margin-top:12px;">${rows}</table>
+        ${eventDetails.description ? `<p style="margin:14px 0 0;color:#6b7280;font-size:13px;line-height:1.5;border-top:1px solid #e5e7eb;padding-top:14px;">${eventDetails.description}</p>` : ""}
+      </div>
+
+      <div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:14px;border-radius:6px;margin:20px 0;">
+        <p style="margin:0;color:#92400e;font-size:14px;"><strong>⚡ Action Required:</strong> Please review and approve or reject this event.</p>
+      </div>
+
+      ${btn(frontendUrl() + "/admin/events", "Review Events", "#7c3aed")}
+    `;
+
+    const html = baseWrapper(
+      "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+      "🎯 New Event Awaiting Approval",
+      body
+    );
+
+    await transporter.sendMail({
+      from: `"${BRAND}" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
+      to: adminEmail,
+      subject: `🎯 New Event Submitted: "${eventName}" — ${BRAND}`,
+      html,
     });
 
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) {
-      console.log("📧 Registration confirmation email preview URL:", previewUrl);
-    }
+    console.log("✅ Admin notification email sent to", adminEmail);
     return true;
   } catch (err) {
-    console.error("❌ Failed to send registration confirmation email:", err);
+    console.error("❌ Failed to send admin notification email:", err.message);
     return false;
   }
 };
+
+/* =================================================
+   4. EVENT REGISTRATION CONFIRMATION → USER
+================================================= */
+exports.sendEventRegistrationConfirmation = async (to, name, eventName, eventDate, eventTime, eventDescription) => {
+  try {
+    const transporter = await createTransporter();
+
+    const body = `
+      <p style="font-size:16px;color:#1f2937;margin:0 0 8px;">Hello ${name},</p>
+      <p style="font-size:15px;color:#059669;font-weight:600;">🎉 You're registered! Your spot for "${eventName}" has been confirmed.</p>
+
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
+        <h3 style="margin:0 0 14px;color:#1f2937;font-size:16px;">📋 Event Details</h3>
+        <table style="width:100%;border-collapse:collapse;">
+          ${infoRow("📌", "Event", eventName)}
+          ${infoRow("📅", "Date", formatDate(eventDate))}
+          ${infoRow("⏰", "Time", eventTime || "TBD")}
+        </table>
+        ${eventDescription ? `<p style="margin:14px 0 0;color:#6b7280;font-size:13px;line-height:1.5;border-top:1px solid #e5e7eb;padding-top:14px;"><strong>About:</strong> ${eventDescription}</p>` : ""}
+      </div>
+
+      <div style="background:#ecfdf5;border-left:4px solid #10b981;padding:14px;border-radius:6px;margin:20px 0;">
+        <p style="margin:0;color:#065f46;font-size:14px;"><strong>What's next?</strong> You'll receive meeting link details and reminders closer to the event date.</p>
+      </div>
+
+      ${btn(frontendUrl() + "/events", "View All Events")}
+    `;
+
+    const html = baseWrapper(
+      "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+      "🎟️ Registration Confirmed",
+      body
+    );
+
+    await transporter.sendMail({
+      from: `"${BRAND}" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
+      to,
+      subject: `🎟️ Registration Confirmed — ${eventName} | ${BRAND}`,
+      html,
+    });
+
+    console.log("✅ Registration confirmation sent to", to);
+    return true;
+  } catch (err) {
+    console.error("❌ Failed to send registration confirmation:", err.message);
+    return false;
+  }
+};
+
+/* =================================================
+   5. PASSWORD RESET EMAIL
+================================================= */
+exports.sendPasswordResetMail = async (to, resetLink, role) => {
+  try {
+    const transporter = await createTransporter();
+
+    const body = `
+      <p style="font-size:16px;color:#1f2937;margin:0 0 8px;">Hello,</p>
+      <p style="font-size:14px;color:#4b5563;line-height:1.6;">
+        We received a request to reset the password for your <strong>${role}</strong> account.
+      </p>
+
+      ${btn(resetLink, "Reset Password", "#dc2626")}
+
+      <div style="background:#fef2f2;border-left:4px solid #ef4444;padding:14px;border-radius:6px;margin:20px 0;">
+        <p style="margin:0;color:#991b1b;font-size:14px;"><strong>⏰ This link expires in 15 minutes.</strong></p>
+      </div>
+
+      <p style="font-size:13px;color:#9ca3af;line-height:1.5;">If you did not request this, you can safely ignore this email. Your password will remain unchanged.</p>
+    `;
+
+    const html = baseWrapper(
+      "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+      "🔐 Password Reset Request",
+      body
+    );
+
+    await transporter.sendMail({
+      from: `"${BRAND}" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
+      to,
+      subject: `🔐 Reset Your Password — ${BRAND} (${role})`,
+      html,
+    });
+
+    console.log("✅ Password reset email sent to", to);
+    return true;
+  } catch (err) {
+    console.error("❌ Failed to send password reset email:", err.message);
+    return false;
+  }
+};
+
+/* =================================================
+   6. LOGIN NOTIFICATION
+================================================= */
+exports.sendLoginNotificationMail = async (to, role) => {
+  try {
+    const transporter = await createTransporter();
+    const now = new Date().toLocaleString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+    });
+
+    const body = `
+      <p style="font-size:16px;color:#1f2937;margin:0 0 8px;">Hello,</p>
+      <p style="font-size:14px;color:#4b5563;line-height:1.6;">
+        Your <strong>${role}</strong> account was just signed into.
+      </p>
+
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:20px 0;">
+        <table style="width:100%;border-collapse:collapse;">
+          ${infoRow("🕐", "Time", now)}
+          ${infoRow("👤", "Role", role)}
+        </table>
+      </div>
+
+      <div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:14px;border-radius:6px;margin:20px 0;">
+        <p style="margin:0;color:#92400e;font-size:14px;"><strong>Not you?</strong> Secure your account immediately by resetting your password.</p>
+      </div>
+    `;
+
+    const html = baseWrapper(
+      `linear-gradient(135deg, ${BRAND_COLOR} 0%, #1d4ed8 100%)`,
+      "🔔 Login Notification",
+      body
+    );
+
+    await transporter.sendMail({
+      from: `"${BRAND}" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
+      to,
+      subject: `🔔 New Login Detected — ${BRAND} (${role})`,
+      html,
+    });
+
+    console.log("✅ Login notification sent to", to);
+    return true;
+  } catch (err) {
+    console.error("❌ Failed to send login notification:", err.message);
+    return false;
+  }
+};
+
+/* =================================================
+   7. UPCOMING EVENT REMINDER → REGISTERED USERS
+================================================= */
+exports.sendUpcomingEventReminder = async (to, userName, eventDetails) => {
+  try {
+    const transporter = await createTransporter();
+
+    const rows = [
+      infoRow("📌", "Event", eventDetails.eventName),
+      infoRow("📅", "Date", formatDate(eventDetails.eventDate)),
+      infoRow("⏰", "Time", eventDetails.eventTime || "TBD"),
+      infoRow("🏷️", "Category", eventDetails.category ? eventDetails.category.charAt(0).toUpperCase() + eventDetails.category.slice(1) : null),
+      infoRow("👥", "Capacity", eventDetails.capacity ? `${eventDetails.capacity} participants` : null),
+      infoRow("🔗", "Meeting Link", eventDetails.meetingLink ? `<a href="${eventDetails.meetingLink}" style="color:${BRAND_COLOR};word-break:break-all;">${eventDetails.meetingLink}</a>` : null),
+    ].join("");
+
+    const body = `
+      <p style="font-size:16px;color:#1f2937;margin:0 0 8px;">Hello ${userName},</p>
+      <p style="font-size:15px;color:#4b5563;line-height:1.6;">
+        This is a friendly reminder that an event you registered for is coming up soon! 🎯
+      </p>
+
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
+        <h3 style="margin:0 0 14px;color:#1f2937;font-size:16px;">📋 Full Event Details</h3>
+        <table style="width:100%;border-collapse:collapse;">${rows}</table>
+        ${eventDetails.description ? `<p style="margin:14px 0 0;color:#6b7280;font-size:13px;line-height:1.5;border-top:1px solid #e5e7eb;padding-top:14px;"><strong>About:</strong> ${eventDetails.description}</p>` : ""}
+      </div>
+
+      <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-left:4px solid #10b981;padding:16px;border-radius:6px;margin:20px 0;">
+        <p style="margin:0;color:#065f46;font-size:14px;">
+          <strong>🎯 Get ready!</strong> Make sure to join on time using the meeting link above. We look forward to seeing you there!
+        </p>
+      </div>
+
+      ${eventDetails.meetingLink ? btn(eventDetails.meetingLink, "Join Event Now", "#10b981") : btn(frontendUrl() + "/events", "View Events")}
+    `;
+
+    const html = baseWrapper(
+      "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+      "⏰ Upcoming Event Reminder",
+      body
+    );
+
+    await transporter.sendMail({
+      from: `"${BRAND}" <${process.env.EMAIL_USER || "no-reply@talentconnect.com"}>`,
+      to,
+      subject: `⏰ Reminder: "${eventDetails.eventName}" is coming up! — ${BRAND}`,
+      html,
+    });
+
+    console.log("✅ Event reminder sent to", to);
+    return true;
+  } catch (err) {
+    console.error("❌ Failed to send event reminder to", to, ":", err.message);
+    return false;
+  }
+};
+
+/* =================================================
+   8. SEND UPCOMING EVENT REMINDERS (batch job)
+      Sends reminders for events happening in next 24h
+================================================= */
+exports.sendUpcomingEventReminders = async () => {
+  try {
+    const Event = require("../models/event.model");
+    const EventRegistration = require("../models/eventRegistration.model");
+    const Registration = require("../models/registration.model");
+    const User = require("../models/user.model");
+
+    const now = new Date();
+    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    // Find approved events happening in the next 24 hours
+    const upcomingEvents = await Event.find({
+      approvalStatus: "approved",
+      eventStatus: "upcoming",
+      eventDate: { $gte: now, $lte: in24h },
+    });
+
+    if (upcomingEvents.length === 0) {
+      console.log("📭 No upcoming events in the next 24 hours.");
+      return { sent: 0, events: 0 };
+    }
+
+    console.log(`📬 Found ${upcomingEvents.length} upcoming event(s). Sending reminders...`);
+
+    let totalSent = 0;
+
+    for (const event of upcomingEvents) {
+      const eventDetails = {
+        eventName: event.eventName,
+        description: event.description,
+        eventDate: event.eventDate,
+        eventTime: event.eventTime,
+        category: event.category,
+        capacity: event.capacity,
+        meetingLink: event.meetingLink,
+      };
+
+      // Get registrations from EventRegistration model (public registration form)
+      const publicRegistrations = await EventRegistration.find({ eventId: event._id });
+
+      for (const reg of publicRegistrations) {
+        await exports.sendUpcomingEventReminder(reg.email, reg.name, eventDetails);
+        totalSent++;
+      }
+
+      // Get registrations from Registration model (logged-in user registration)
+      const userRegistrations = await Registration.find({ eventId: event._id }).populate("userId", "fullname email");
+
+      for (const reg of userRegistrations) {
+        if (reg.userId && reg.userId.email) {
+          // Skip if already sent via public registration
+          const alreadySent = publicRegistrations.some(
+            (pr) => pr.email.toLowerCase() === reg.userId.email.toLowerCase()
+          );
+          if (alreadySent) continue;
+
+          const userName = reg.userId.fullname
+            ? `${reg.userId.fullname.firstname} ${reg.userId.fullname.lastname}`
+            : "User";
+
+          await exports.sendUpcomingEventReminder(reg.userId.email, userName, eventDetails);
+          totalSent++;
+        }
+      }
+    }
+
+    console.log(`✅ Sent ${totalSent} event reminder(s) for ${upcomingEvents.length} event(s).`);
+    return { sent: totalSent, events: upcomingEvents.length };
+  } catch (err) {
+    console.error("❌ Failed to send upcoming event reminders:", err.message);
+    return { sent: 0, events: 0, error: err.message };
+  }
+};
+
+/* =================================================
+   LEGACY ALIAS — keeps old imports working
+================================================= */
+exports.sendEventApprovalMail = exports.sendEventDecisionNotification;

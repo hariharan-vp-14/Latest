@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useCallback } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Menu, X, LogOut, Settings, User, Calendar, Plus, CheckCircle } from 'lucide-react';
 import logo from '../assets/talentconnect-logo.svg';
@@ -8,7 +8,22 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout, isAuthenticated, userRole } = useAuth();
+
+  const scrollToSection = useCallback((sectionId) => {
+    setMobileMenuOpen(false);
+    if (location.pathname === '/') {
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/');
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [location.pathname, navigate]);
 
   const handleLogout = () => {
     logout();
@@ -18,45 +33,54 @@ export const Header = () => {
   const firstName = user?.fullname?.firstname || user?.firstname || 'User';
 
   return (
-    <header className="bg-gradient-to-r from-gray-50 to-gray-100 shadow-md border-b border-gray-200 sticky top-0 z-40">
+    <header className="bg-white/80 backdrop-blur-lg shadow-sm border-b border-gray-100 sticky top-0 z-40 transition-shadow duration-300 hover:shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 font-bold text-xl text-blue-600 hover:text-blue-700 transition">
+          <Link to="/" className="flex items-center gap-2.5 group">
             <img
               src={logo}
               alt="TalentConnect Pro"
-              className="h-11 w-11 rounded-lg bg-white object-contain"
+              className="h-9 w-9 rounded-lg object-contain transition-transform duration-200 group-hover:scale-105"
             />
-            <span className="hidden sm:inline">TalentConnect Pro</span>
+            <span className="hidden sm:inline font-heading text-lg font-bold tracking-tight text-gray-900 group-hover:text-blue-600 transition-colors duration-200">TalentConnect<span className="text-blue-600">Pro</span></span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            <Link to="/" className="text-gray-700 hover:text-blue-600 transition font-medium">
+          <nav className="hidden md:flex items-center gap-1">
+            <Link to="/" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/60 rounded-lg transition-all duration-200">
               Home
             </Link>
-            <Link to="/how-it-works" className="text-gray-700 hover:text-blue-600 transition font-medium">
+            <Link to="/how-it-works" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/60 rounded-lg transition-all duration-200">
               How It Works
             </Link>
+            <button onClick={() => scrollToSection('about')} className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/60 rounded-lg transition-all duration-200">
+              About Us
+            </button>
+            <button onClick={() => scrollToSection('contact')} className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/60 rounded-lg transition-all duration-200">
+              Contact Us
+            </button>
+            <button onClick={() => scrollToSection('donation')} className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/60 rounded-lg transition-all duration-200">
+              Donation
+            </button>
             {isAuthenticated && (
               <>
                 {userRole === 'host' && (
                   <>
-                    <Link to="/host/events" className="text-gray-700 hover:text-blue-600 transition font-medium flex items-center gap-2">
-                      <Calendar size={16} />
+                    <Link to="/host/events" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/60 rounded-lg transition-all duration-200 flex items-center gap-1.5">
+                      <Calendar size={15} />
                       My Events
                     </Link>
-                    <Link to="/host/create-event" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium flex items-center gap-2">
-                      <Plus size={16} />
+                    <Link to="/host/create-event" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-semibold flex items-center gap-1.5 shadow-sm hover:shadow-md">
+                      <Plus size={15} />
                       Create Event
                     </Link>
                   </>
                 )}
                 {userRole === 'admin' && (
-                  <Link to="/admin/events" className="text-gray-700 hover:text-blue-600 transition font-medium flex items-center gap-1">
-                    <Settings size={16} />
-                    <CheckCircle size={16} />
+                  <Link to="/admin/events" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/60 rounded-lg transition-all duration-200 flex items-center gap-1.5">
+                    <Settings size={15} />
+                    <CheckCircle size={15} />
                     Review Events
                   </Link>
                 )}
@@ -65,39 +89,43 @@ export const Header = () => {
           </nav>
 
           {/* Desktop Right Section */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
-              <div className="flex items-center gap-4 pl-4 border-l border-gray-300">
+              <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-gray-900">{firstName}</p>
-                  <p className="text-xs text-gray-600 capitalize">
+                  <p className="text-sm font-semibold text-gray-900 leading-tight">{firstName}</p>
+                  <p className="text-[11px] text-gray-500 capitalize tracking-wide">
                     {userRole === 'user' ? 'Participant' : userRole === 'admin' ? 'Admin' : 'Host'}
                   </p>
                 </div>
                 <div className="relative">
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full text-white flex items-center justify-center hover:from-blue-600 hover:to-blue-700 transition font-bold"
+                    className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full text-white text-sm flex items-center justify-center hover:shadow-lg hover:scale-105 transition-all duration-200 font-bold ring-2 ring-white"
                   >
                     {firstName.charAt(0).toUpperCase()}
                   </button>
                   {userMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                    <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-1 animate-in fade-in slide-in-from-top-1">
+                      <div className="px-4 py-2.5 border-b border-gray-100">
+                        <p className="text-sm font-semibold text-gray-900">{firstName}</p>
+                        <p className="text-xs text-gray-500 capitalize">{userRole}</p>
+                      </div>
                       <Link
                         to="/profile"
                         onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-2 w-full px-4 py-3 text-left hover:bg-gray-50 transition border-b border-gray-100"
+                        className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
                       >
-                        <User size={16} className="text-blue-600" /> Profile
+                        <User size={15} className="text-gray-400" /> Profile
                       </Link>
                       <button
                         onClick={() => {
                           handleLogout();
                           setUserMenuOpen(false);
                         }}
-                        className="flex items-center gap-2 w-full px-4 py-3 text-left hover:bg-red-50 text-red-600 transition"
+                        className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
                       >
-                        <LogOut size={16} /> Logout
+                        <LogOut size={15} /> Sign out
                       </button>
                     </div>
                   )}
@@ -107,15 +135,15 @@ export const Header = () => {
               <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-blue-600 font-medium hover:bg-blue-50 rounded-lg transition"
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50/60 rounded-lg transition-all duration-200"
                 >
-                  Login
+                  Log in
                 </Link>
                 <Link
                   to="/signup"
-                  className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition"
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 shadow-sm hover:shadow-md transition-all duration-200"
                 >
-                  Sign Up
+                  Sign up
                 </Link>
               </div>
             )}
@@ -134,31 +162,40 @@ export const Header = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <nav className="md:hidden pb-4 space-y-2 bg-gray-100 rounded-lg p-3 mb-3">
-            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition">
+          <nav className="md:hidden pb-4 space-y-1 bg-white rounded-xl p-2 mb-3 shadow-lg border border-gray-100">
+            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-150">
               Home
             </Link>
-            <Link to="/how-it-works" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition">
+            <Link to="/how-it-works" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-150">
               How It Works
             </Link>
+            <button onClick={() => scrollToSection('about')} className="block w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-150">
+              About Us
+            </button>
+            <button onClick={() => scrollToSection('contact')} className="block w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-150">
+              Contact Us
+            </button>
+            <button onClick={() => scrollToSection('donation')} className="block w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-150">
+              Donation
+            </button>
             {isAuthenticated && (
               <>
                 {userRole === 'host' && (
                   <>
-                    <Link to="/host/events" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition">
-                      <Calendar size={16} />
+                    <Link to="/host/events" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-150">
+                      <Calendar size={15} />
                       My Events
                     </Link>
-                    <Link to="/host/create-event" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg transition font-medium">
-                      <Plus size={16} />
+                    <Link to="/host/create-event" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg transition-all duration-150 text-sm font-semibold">
+                      <Plus size={15} />
                       Create Event
                     </Link>
                   </>
                 )}
                 {userRole === 'admin' && (
-                  <Link to="/admin/events" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition">
-                    <Settings size={16} />
-                    <CheckCircle size={16} />
+                  <Link to="/admin/events" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-150">
+                    <Settings size={15} />
+                    <CheckCircle size={15} />
                     Review Events
                   </Link>
                 )}
@@ -166,26 +203,26 @@ export const Header = () => {
             )}
             {isAuthenticated ? (
               <>
-                <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition">
-                  <User size={16} /> Profile
+                <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-150">
+                  <User size={15} /> Profile
                 </Link>
                 <button
                   onClick={() => {
                     handleLogout();
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition flex items-center gap-2"
+                  className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-all duration-150 flex items-center gap-2"
                 >
-                  <LogOut size={16} /> Logout
+                  <LogOut size={15} /> Sign out
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition">
-                  Login
+                <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-150">
+                  Log in
                 </Link>
-                <Link to="/signup" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 bg-blue-600 text-white rounded-lg transition">
-                  Sign Up
+                <Link to="/signup" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg transition-all duration-150 text-center">
+                  Sign up
                 </Link>
               </>
             )}
@@ -242,13 +279,13 @@ export const Footer = () => {
   };
 
   return (
-    <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-gray-300 mt-20 border-t border-gray-800">
+    <footer className="bg-gray-950 text-gray-400 mt-20 border-t border-gray-800/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Newsletter Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-8 mb-12 text-white">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 mb-14 text-white shadow-lg">
           <div className="max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold mb-2">Stay Updated!</h3>
-            <p className="text-blue-100 mb-6">
+            <h3 className="text-2xl font-bold mb-2 tracking-tight">Stay Updated!</h3>
+            <p className="text-blue-100/80 mb-6 text-sm">
               Subscribe to our newsletter for the latest events, accessibility tips, and updates.
             </p>
             <form onSubmit={handleNewsletterSubscribe} className="flex flex-col sm:flex-row gap-3">
@@ -258,13 +295,13 @@ export const Footer = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
-                className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-50"
+                className="flex-1 px-4 py-3 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-50 placeholder:text-gray-400"
                 required
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-white text-blue-600 text-sm font-semibold rounded-lg hover:bg-blue-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 {loading ? 'Subscribing...' : 'Subscribe'}
               </button>
@@ -285,12 +322,12 @@ export const Footer = () => {
         </div>
 
         {/* Main Footer Content - 4 Column Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-14">
           {/* Column 1: About */}
           <div className="space-y-4">
             <div>
-              <h3 className="text-white font-bold text-lg mb-2">TalentConnect Pro</h3>
-              <p className="text-blue-400 text-xs font-semibold">Empowering Accessibility</p>
+              <h3 className="text-white font-bold text-lg mb-1 tracking-tight">TalentConnect<span className="text-blue-400">Pro</span></h3>
+              <p className="text-blue-400/70 text-xs font-medium tracking-wider uppercase">Empowering Accessibility</p>
             </div>
             <p className="text-sm leading-relaxed text-gray-400">
               Empowering students with disabilities through accessible virtual conferences.
@@ -302,7 +339,7 @@ export const Footer = () => {
 
           {/* Column 2: Quick Links */}
           <div>
-            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Quick Links</h4>
+            <h4 className="text-white font-semibold mb-4 text-xs uppercase tracking-widest">Quick Links</h4>
             <ul className="space-y-3 text-sm">
               <li>
                 <Link to="/" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
@@ -329,7 +366,7 @@ export const Footer = () => {
 
           {/* Column 3: Support */}
           <div>
-            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Support</h4>
+            <h4 className="text-white font-semibold mb-4 text-xs uppercase tracking-widest">Support</h4>
             <ul className="space-y-3 text-sm">
               <li>
                 <a href="#help" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">
@@ -356,7 +393,7 @@ export const Footer = () => {
 
           {/* Column 4: Legal */}
           <div>
-            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Legal</h4>
+            <h4 className="text-white font-semibold mb-4 text-xs uppercase tracking-widest">Legal</h4>
             <ul className="space-y-3 text-sm">
               <li>
                 <a href="#privacy" className="text-gray-400 hover:text-white transition duration-200 flex items-center gap-2">

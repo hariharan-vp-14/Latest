@@ -165,4 +165,28 @@ router.put(
   eventController.updateEventApprovalStatus
 );
 
+/* =================================================
+   ADMIN → MANUALLY TRIGGER UPCOMING EVENT REMINDERS
+   POST /api/events/send-reminders
+================================================= */
+router.post(
+  "/send-reminders",
+  authMiddleware,
+  roleMiddleware("administrator"),
+  async (req, res) => {
+    try {
+      const { sendUpcomingEventReminders } = require("../services/email.services");
+      const result = await sendUpcomingEventReminders();
+      res.status(200).json({
+        success: true,
+        message: `Sent ${result.sent} reminder(s) for ${result.events} event(s).`,
+        ...result,
+      });
+    } catch (err) {
+      console.error("❌ Manual reminder trigger failed:", err);
+      res.status(500).json({ success: false, message: err.message });
+    }
+  }
+);
+
 module.exports = router;
