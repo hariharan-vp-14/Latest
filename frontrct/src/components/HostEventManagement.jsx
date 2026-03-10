@@ -110,8 +110,8 @@ export const HostEventManagement = () => {
 
       const method = editingEventId ? 'PUT' : 'POST';
       const url = editingEventId 
-        ? `http://localhost:4000/api/events/${editingEventId}`
-        : 'http://localhost:4000/api/events';
+        ? `${import.meta.env.VITE_API_URL}/api/events/${editingEventId}`
+        : `${import.meta.env.VITE_API_URL}/api/events`;
 
       // Call the API directly since we don't have createEvent in AppContext yet
       const response = await fetch(url, {
@@ -161,7 +161,7 @@ export const HostEventManagement = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:4000/api/events/${eventId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events/${eventId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
